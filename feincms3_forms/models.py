@@ -191,7 +191,7 @@ class SimpleFieldBase(models.Model):
 
         elif self.type == "select":
             choices = self.get_choices()
-            if not self.is_required or self.default_value:
+            if not self.is_required or not self.default_value:
                 choices = [("", "----------")] + choices
             return {
                 self.key: forms.ChoiceField(choices=choices, **field_kw),

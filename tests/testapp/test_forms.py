@@ -64,15 +64,36 @@ class FormsTest(test.TestCase):
             "ordering": 10,
             "label": "label",
             "key": "key",
+            "type": "select",
         }
 
-        Select(choices="a\nb", default_value="b", **kw).full_clean()
-        Select(choices="a\nb", default_value="", **kw).full_clean()
+        item = Select(choices="a\nb", default_value="", **kw)
+        item.full_clean()  # Validates just fine
+        self.assertEqual(
+            item.get_fields()["key"].choices,
+            [("", "----------"), ("a", "a"), ("b", "b")],
+        )
+
+        item.default_value = "b"
+        item.full_clean()  # Validates just fine
+        self.assertEqual(
+            item.get_fields()["key"].choices,
+            [("a", "a"), ("b", "b")],
+        )
 
         with self.assertRaises(ValidationError) as cm:
-            Select(choices="a\nb", default_value="c", **kw).full_clean()
+            item.default_value = "c"
+            item.full_clean()
 
         self.assertEqual(
             cm.exception.error_dict["default_value"][0].message,
             'The specified default value "c" isn\'t part of' " the available choices.",
+        )
+
+        kw["type"] = "radio"
+        item = Select(choices="A\nB", default_value="", **kw)
+        item.full_clean()  # Validates just fine
+        self.assertEqual(
+            item.get_fields()["key"].choices,
+            [("a", "A"), ("b", "B")],
         )
