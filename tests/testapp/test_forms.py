@@ -1,7 +1,8 @@
 from django import test
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
-from .models import ConfiguredForm, PlainText, Text
+from .models import ConfiguredForm, PlainText, Select, Text
 
 
 # from django.test.utils import override_settings
@@ -39,3 +40,23 @@ class FormsTest(test.TestCase):
     def test_unconfigured_form(self):
         cf = ConfiguredForm()
         self.assertEqual(cf.regions, [])
+
+    def test_choices(self):
+        cf = ConfiguredForm.objects.create()
+        kw = {
+            "parent": cf,
+            "region": "form",
+            "ordering": 10,
+            "label": "label",
+            "key": "key",
+        }
+
+        Select(choices="a\nb", default_value="b", **kw).full_clean()
+
+        with self.assertRaises(ValidationError) as cm:
+            Select(choices="a\nb", default_value="c", **kw).full_clean()
+
+        self.assertEqual(
+            cm.exception.error_dict["default_value"][0].message,
+            'The specified default value "c" isn\'t part of' " the available choices.",
+        )
