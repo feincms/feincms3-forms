@@ -36,7 +36,9 @@ class ConfiguredForm(models.Model):
             field.choices = [(row["key"], row["label"]) for row in sender.FORMS]
 
             form_classes = {row["key"]: row["form_class"] for row in sender.FORMS}
-            sender.form_class = property(lambda self: import_string(form_classes[self.form]))
+            sender.form_class = property(
+                lambda self: import_string(form_classes[self.form])
+            )
 
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
@@ -50,7 +52,19 @@ class FormBase(forms.Form):
         pass
 
 
-class FieldBase(models.Model):
+class SimpleFieldBase(models.Model):
+    class Type(models.TextChoices):
+        TEXT = "text", _("text field")
+        EMAIL = "email", _("email address field")
+        URL = "url", _("URL field")
+        DATE = "date", _("date field")
+        TEXTAREA = "textarea", _("multiline text field")
+        CHECKBOX = "checkbox", _("checkbox field")
+        SELECT = "select", _("dropdown field")
+        RADIO = "radio", _("radio input field")
+
+    type = models.CharField(_("type"), max_length=1000, editable=False)
+
     label = models.CharField(_("label"), max_length=1000)
     key = models.SlugField(
         _("key"),
@@ -65,41 +79,10 @@ class FieldBase(models.Model):
         blank=True,
     )
 
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return self.label
-
-
-class SimpleFieldMixin(models.Model):
-    type = models.CharField(_("type"), max_length=1000, editable=False)
-
-    class Meta:
-        abstract = True
-
-    def save(self, *args, **kwargs):
-        self.type = self.TYPE
-        super().save(*args, **kwargs)
-
-    save.alters_data = True
-
-    @classmethod
-    def proxy(cls, type_name, **meta):
-        meta["proxy"] = True
-        meta["app_label"] = cls._meta.app_label
-        meta_class = type("Meta", (cls.Meta,), meta)
-
-        cls = type(
-            f"{cls.__qualname__}_{type_name}",
-            (cls,),
-            {"__module__": cls.__module__, "Meta": meta_class},
-        )
-        cls.TYPE = type_name
-        return cls
-
-
-class SimpleFieldBase(FieldBase, SimpleFieldMixin):
+    choices = models.TextField(
+        _("choices"),
+        help_text=_("Enter one choice per line."),
+    )
     placeholder = models.CharField(
         _("placeholder"),
         max_length=1000,
@@ -111,68 +94,37 @@ class SimpleFieldBase(FieldBase, SimpleFieldMixin):
         blank=True,
         help_text=_("Optional default value of the field."),
     )
+    max_length = models.PositiveIntegerField(_("max length"), blank=True, null=True)
 
     class Meta:
         abstract = True
 
-    def get_fields(self, *, initial=None, **kwargs):
-        if self.default_value and initial is not None:
-            initial.setdefault(self.key, self.default_value)
+    def __str__(self):
+        return self.label
 
-        field_kw = {
-            "label": self.label,
-            "required": self.is_required,
-            "help_text": self.help_text,
-        }
+    def save(self, *args, **kwargs):
+        self.type = self.TYPE
+        super().save(*args, **kwargs)
 
-        if self.type == "textarea":
-            return {
-                self.key: forms.CharField(
-                    widget=forms.Textarea(
-                        attrs={"placeholder": self.placeholder, "rows": 5}
-                    ),
-                    **field_kw,
-                )
-            }
+    save.alters_data = True
 
-        elif self.type == "date":
-            return {
-                self.key: forms.DateField(
-                    widget=forms.DateInput(
-                        attrs={"placeholder": self.placeholder, "type": "date"}
-                    ),
-                    **field_kw,
-                )
-            }
+    @classmethod
+    def proxy(cls, type_name, **meta):
+        meta["proxy"] = True
+        meta["app_label"] = cls._meta.app_label
 
-        else:
-            field = {
-                "text": forms.CharField,
-                "email": forms.EmailField,
-                "checkbox": forms.BooleanField,
-            }.get(self.type, forms.CharField)
-            return {
-                self.key: field(
-                    widget=field.widget(attrs={"placeholder": self.placeholder}),
-                    **field_kw,
-                ),
-            }
+        if "verbose_name" not in meta and hasattr(type_name, "label"):
+            meta["verbose_name"] = type_name.label
 
+        meta_class = type("Meta", (cls.Meta,), meta)
 
-class SimpleChoiceFieldBase(FieldBase, SimpleFieldMixin):
-    choices = models.TextField(
-        _("choices"),
-        help_text=_("Enter one choice per line."),
-    )
-    default_value = models.CharField(
-        _("default value"),
-        max_length=1000,
-        blank=True,
-        help_text=_("Optional default value of the field."),
-    )
-
-    class Meta:
-        abstract = True
+        cls = type(
+            f"{cls.__qualname__}_{type_name}",
+            (cls,),
+            {"__module__": cls.__module__, "Meta": meta_class},
+        )
+        cls.TYPE = type_name
+        return cls
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
@@ -194,25 +146,76 @@ class SimpleChoiceFieldBase(FieldBase, SimpleFieldMixin):
 
     def get_fields(self, *, initial=None, **kwargs):
         if self.default_value and initial is not None:
-            initial.setdefault(self.key, slugify(self.default_value))
+            if self.choices:
+                initial.setdefault(self.key, slugify(self.default_value))
+            else:
+                initial.setdefault(self.key, self.default_value)
 
-        choices = self.get_choices()
         field_kw = {
             "label": self.label,
             "required": self.is_required,
             "help_text": self.help_text,
-            "choices": choices,
         }
 
-        if self.type == "radio":
+        if self.type == "textarea":
             return {
-                self.key: forms.ChoiceField(widget=forms.RadioSelect(), **field_kw),
+                self.key: forms.CharField(
+                    max_length=self.max_length,
+                    widget=forms.Textarea(
+                        attrs={
+                            "maxlength": self.max_length or False,
+                            "placeholder": self.placeholder,
+                            "rows": 5,
+                        },
+                    ),
+                    **field_kw,
+                )
+            }
+
+        elif self.type == "date":
+            return {
+                self.key: forms.DateField(
+                    widget=forms.DateInput(
+                        attrs={"placeholder": self.placeholder, "type": "date"}
+                    ),
+                    **field_kw,
+                )
+            }
+
+        elif self.type == "radio":
+            return {
+                self.key: forms.ChoiceField(
+                    widget=forms.RadioSelect(), choices=self.get_choices(), **field_kw
+                ),
+            }
+
+        elif self.type == "select":
+            choices = self.get_choices()
+            if not self.is_required or self.default_value:
+                choices = [("", "----------")] + choices
+            return {
+                self.key: forms.ChoiceField(choices=choices, **field_kw),
+            }
+
+        elif self.type in {"email", "url", "checkbox"}:
+            field = {
+                "email": forms.EmailField,
+                "url": forms.URLField,
+                "checkbox": forms.BooleanField,
+            }[self.type]
+            return {
+                self.key: field(
+                    widget=field.widget(attrs={"placeholder": self.placeholder}),
+                    **field_kw,
+                ),
             }
 
         else:
-            if not self.is_required or self.default_value:
-                choices = [("", "----------")] + choices
-
+            field = forms.CharField
             return {
-                self.key: forms.ChoiceField(**field_kw),
+                self.key: field(
+                    max_length=self.max_length,
+                    widget=field.widget(attrs={"placeholder": self.placeholder}),
+                    **field_kw,
+                ),
             }

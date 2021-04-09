@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-09 11:36+0200\n"
+"POT-Creation-Date: 2021-04-09 14:33+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,69 +18,105 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:20 admin.py:52
+#: admin.py:37
 msgid "Advanced"
 msgstr "Fortgeschritten"
 
-#: models.py:12
+#: models.py:13
 msgid "name"
 msgstr "Name"
 
-#: models.py:13 models.py:45
+#: models.py:14 models.py:48
 msgid "form"
 msgstr "Formular"
 
-#: models.py:18 models.py:19
+#: models.py:19 models.py:20
 msgid "configured form"
 msgstr "Konfiguriertes Formular"
 
-#: models.py:53 models.py:152
+#: models.py:57
+msgid "text field"
+msgstr "Textfeld"
+
+#: models.py:58
+msgid "email address field"
+msgstr "E-Mail-Feld"
+
+#: models.py:59
+msgid "URL field"
+msgstr "URL-Feld"
+
+#: models.py:60
+msgid "date field"
+msgstr "Datumsfeld"
+
+#: models.py:61
+msgid "multiline text field"
+msgstr "Mehrzeiliges Textfeld"
+
+#: models.py:62
+msgid "checkbox field"
+msgstr "Checkbox-Feld"
+
+#: models.py:63
+msgid "dropdown field"
+msgstr "Dropdown-Feld"
+
+#: models.py:64
+msgid "radio input field"
+msgstr "Radioauswahl-Feld"
+
+#: models.py:66
 msgid "type"
 msgstr "Typ"
 
-#: models.py:55 models.py:154
+#: models.py:68
 msgid "label"
 msgstr "Beschriftung"
 
-#: models.py:57 models.py:156
+#: models.py:70
 msgid "key"
 msgstr "Schlüssel"
 
-#: models.py:59 models.py:158
+#: models.py:72
 msgid "Data is saved using this key. Changing it may result in data loss."
 msgstr ""
 "Die Daten werden mit diesem Schlüssel gespeichert. Änderungen könnten "
 "Datenverlust zur Folge haben."
 
-#: models.py:62 models.py:161
+#: models.py:75
 msgid "is required"
 msgstr "ist notwendig"
 
-#: models.py:65 models.py:164
+#: models.py:77
 msgid "help text"
 msgstr "Hilfstext"
 
-#: models.py:70
-msgid "placeholder"
-msgstr "Platzhalter"
-
-#: models.py:75 models.py:173
-msgid "default value"
-msgstr "Standardwert"
-
-#: models.py:78 models.py:176
-msgid "Optional default value of the field."
-msgstr "Optionaler vorgegebener Standardwert für das Feld."
-
-#: models.py:169
+#: models.py:83
 msgid "choices"
 msgstr "Auswahl"
 
-#: models.py:170
+#: models.py:84
 msgid "Enter one choice per line."
 msgstr "Eine Auswahlmöglichkeit pro Zeile."
 
-#: models.py:212
+#: models.py:87
+msgid "placeholder"
+msgstr "Platzhalter"
+
+#: models.py:92
+msgid "default value"
+msgstr "Standardwert"
+
+#: models.py:95
+msgid "Optional default value of the field."
+msgstr "Optionaler vorgegebener Standardwert für das Feld."
+
+#: models.py:97
+msgid "max length"
+msgstr "Maximale Länge"
+
+#: models.py:136
 #, python-format
 msgid ""
 "The specified default value \"%(default)s\" isn't part of the available "
