@@ -91,9 +91,9 @@ class FormsTest(test.TestCase):
         )
 
         kw["type"] = "radio"
-        item = Select(choices="A\nB", default_value="", **kw)
+        item = Select(choices="A\nB is fun", default_value="", **kw)
         item.full_clean()  # Validates just fine
         self.assertEqual(
             item.get_fields()["key"].choices,
-            [("a", "A"), ("b", "B")],
+            [("a", "A"), ("b-is-fun", "B is fun")],
         )
