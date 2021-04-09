@@ -1,0 +1,90 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-04-09 11:36+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: admin.py:20 admin.py:52
+msgid "Advanced"
+msgstr "Fortgeschritten"
+
+#: models.py:12
+msgid "name"
+msgstr "Name"
+
+#: models.py:13 models.py:45
+msgid "form"
+msgstr "Formular"
+
+#: models.py:18 models.py:19
+msgid "configured form"
+msgstr "Konfiguriertes Formular"
+
+#: models.py:53 models.py:152
+msgid "type"
+msgstr "Typ"
+
+#: models.py:55 models.py:154
+msgid "label"
+msgstr "Beschriftung"
+
+#: models.py:57 models.py:156
+msgid "key"
+msgstr "Schlüssel"
+
+#: models.py:59 models.py:158
+msgid "Data is saved using this key. Changing it may result in data loss."
+msgstr ""
+"Die Daten werden mit diesem Schlüssel gespeichert. Änderungen könnten "
+"Datenverlust zur Folge haben."
+
+#: models.py:62 models.py:161
+msgid "is required"
+msgstr "ist notwendig"
+
+#: models.py:65 models.py:164
+msgid "help text"
+msgstr "Hilfstext"
+
+#: models.py:70
+msgid "placeholder"
+msgstr "Platzhalter"
+
+#: models.py:75 models.py:173
+msgid "default value"
+msgstr "Standardwert"
+
+#: models.py:78 models.py:176
+msgid "Optional default value of the field."
+msgstr "Optionaler vorgegebener Standardwert für das Feld."
+
+#: models.py:169
+msgid "choices"
+msgstr "Auswahl"
+
+#: models.py:170
+msgid "Enter one choice per line."
+msgstr "Eine Auswahlmöglichkeit pro Zeile."
+
+#: models.py:212
+#, python-format
+msgid ""
+"The specified default value \"%(default)s\" isn't part of the available "
+"choices."
+msgstr ""
+"Der angegebene Standardwert \"%(default)s\" ist nicht Teil der verfügbaren "
+"Werte."
