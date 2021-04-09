@@ -1,5 +1,9 @@
-from content_editor.admin import ContentEditorInline
+from content_editor.admin import ContentEditor, ContentEditorInline
 from django.utils.translation import gettext_lazy as _
+
+
+class ConfiguredFormAdmin(ContentEditor):
+    pass
 
 
 class SimpleFieldInline(ContentEditorInline):
@@ -7,23 +11,13 @@ class SimpleFieldInline(ContentEditorInline):
         (
             None,
             {
-                "fields": [
-                    "label",
-                    "key",
-                    "is_required",
-                    "ordering",
-                    "region",
-                ],
+                "fields": ["label", "key", "is_required", "ordering", "region"],
             },
         ),
         (
             _("Advanced"),
             {
-                "fields": [
-                    "help_text",
-                    "placeholder",
-                    "default_value",
-                ],
+                "fields": ["help_text", "placeholder", "default_value"],
                 "classes": ["collapse"],
             },
         ),
@@ -51,10 +45,7 @@ class SimpleChoiceFieldInline(ContentEditorInline):
         (
             _("Advanced"),
             {
-                "fields": [
-                    "help_text",
-                    "default_value",
-                ],
+                "fields": ["help_text", "default_value"],
                 "classes": ["collapse"],
             },
         ),

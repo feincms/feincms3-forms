@@ -22,5 +22,3 @@ class FormRegions(Regions):
         }
 
         return form
-
-
