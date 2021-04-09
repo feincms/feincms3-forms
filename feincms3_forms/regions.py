@@ -1,4 +1,3 @@
-from django.utils.crypto import get_random_string
 from feincms3.regions import Regions
 
 
@@ -7,7 +6,9 @@ class FormRegions(Regions):
         item_fields = {}
         all_fields = {}
         initial = form_kwargs.setdefault("initial", {})
-        form_kwargs["prefix"] = get_random_string(6)
+
+        if items and (parent := items[0].parent):
+            form_kwargs["prefix"] = f"{parent._meta.model_name}-{parent.id}"
 
         for item in items:
             if hasattr(item, "get_fields"):
