@@ -18,6 +18,7 @@ class FormRegions(Regions):
                 item_fields[item] = fields = item.get_fields(initial=initial)
                 all_fields.update(fields)
 
+        form_kwargs.setdefault("auto_id", "")
         form = type("Form", (form_class,), all_fields.copy())(**form_kwargs)
 
         for item, fields in item_fields.items():
