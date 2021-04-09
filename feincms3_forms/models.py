@@ -164,7 +164,7 @@ class SimpleFieldBase(models.Model):
                     widget=forms.Textarea(
                         attrs={
                             "maxlength": self.max_length or False,
-                            "placeholder": self.placeholder,
+                            "placeholder": self.placeholder or False,
                             "rows": 5,
                         },
                     ),
@@ -176,7 +176,7 @@ class SimpleFieldBase(models.Model):
             return {
                 self.key: forms.DateField(
                     widget=forms.DateInput(
-                        attrs={"placeholder": self.placeholder, "type": "date"}
+                        attrs={"placeholder": self.placeholder or False, "type": "date"}
                     ),
                     **field_kw,
                 )
@@ -205,7 +205,9 @@ class SimpleFieldBase(models.Model):
             }[self.type]
             return {
                 self.key: field(
-                    widget=field.widget(attrs={"placeholder": self.placeholder}),
+                    widget=field.widget(
+                        attrs={"placeholder": self.placeholder or False}
+                    ),
                     **field_kw,
                 ),
             }
@@ -215,7 +217,9 @@ class SimpleFieldBase(models.Model):
             return {
                 self.key: field(
                     max_length=self.max_length,
-                    widget=field.widget(attrs={"placeholder": self.placeholder}),
+                    widget=field.widget(
+                        attrs={"placeholder": self.placeholder or False}
+                    ),
                     **field_kw,
                 ),
             }

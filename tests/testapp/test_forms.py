@@ -27,7 +27,12 @@ class FormsTest(test.TestCase):
         )
 
         response = self.client.get("/")
-        print(response, response.content.decode("utf-8"))
+        prefix = response.context["form"].prefix
+        self.assertContains(
+            response,
+            f'<input type="text" name="{prefix}-full_name" required>',
+            html=True,
+        )
 
     def test_admin(self):
         user = User.objects.create_superuser("admin", "admin@example.com", "password")
@@ -35,10 +40,20 @@ class FormsTest(test.TestCase):
 
         cf = ConfiguredForm.objects.create(name="Test", form="contact")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
-        print(response, response.content.decode("utf-8"))
+
+        self.assertContains(response, "&quot;testapp_simplefield_set&quot;")
+        self.assertContains(response, "&quot;testapp_simplefield_set-2&quot;")
+        self.assertContains(response, "&quot;testapp_simplefield_set-8&quot;")
+        # print(response, response.content.decode("utf-8"))
+
+    def test_form_without_items(self):
+        ConfiguredForm.objects.create(name="Test", form="contact")
+        response = self.client.get("/")
+        prefix = response.context["form"].prefix
+        self.assertEqual(prefix, None)
 
     def test_unconfigured_form(self):
-        cf = ConfiguredForm()
+        cf = ConfiguredForm.objects.create()
         self.assertEqual(cf.regions, [])
 
     def test_choices(self):
