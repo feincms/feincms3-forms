@@ -1,3 +1,5 @@
+from hashlib import sha1
+
 from feincms3.regions import Regions
 
 
@@ -7,8 +9,9 @@ class FormRegions(Regions):
         all_fields = {}
         initial = form_kwargs.setdefault("initial", {})
 
-        if items and (parent := items[0].parent):
-            form_kwargs["prefix"] = f"{parent._meta.model_name}-{parent.id}"
+        if items and (item := items[0]) and (parent := item.parent):
+            identifier = f"{parent._meta.model_name}-{parent.id}-{item.region}"
+            form_kwargs["prefix"] = sha1(identifier.encode("utf-8")).hexdigest()[:6]
 
         for item in items:
             if hasattr(item, "get_fields"):
