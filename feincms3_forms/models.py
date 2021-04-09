@@ -49,9 +49,7 @@ class FormBase(forms.Form):
         pass
 
 
-class SimpleFieldBase(models.Model):
-    type = models.CharField(_("type"), max_length=1000, editable=False)
-
+class FieldBase(models.Model):
     label = models.CharField(_("label"), max_length=1000)
     key = models.SlugField(
         _("key"),
@@ -60,22 +58,10 @@ class SimpleFieldBase(models.Model):
         ),
     )
     is_required = models.BooleanField(_("is required"), default=True)
-
     help_text = models.CharField(
         _("help text"),
         max_length=1000,
         blank=True,
-    )
-    placeholder = models.CharField(
-        _("placeholder"),
-        max_length=1000,
-        blank=True,
-    )
-    default_value = models.CharField(
-        _("default value"),
-        max_length=1000,
-        blank=True,
-        help_text=_("Optional default value of the field."),
     )
 
     class Meta:
@@ -83,6 +69,13 @@ class SimpleFieldBase(models.Model):
 
     def __str__(self):
         return self.label
+
+
+class SimpleFieldMixin(models.Model):
+    type = models.CharField(_("type"), max_length=1000, editable=False)
+
+    class Meta:
+        abstract = True
 
     def save(self, *args, **kwargs):
         self.type = self.TYPE
@@ -103,6 +96,23 @@ class SimpleFieldBase(models.Model):
         )
         cls.TYPE = type_name
         return cls
+
+
+class SimpleFieldBase(FieldBase, SimpleFieldMixin):
+    placeholder = models.CharField(
+        _("placeholder"),
+        max_length=1000,
+        blank=True,
+    )
+    default_value = models.CharField(
+        _("default value"),
+        max_length=1000,
+        blank=True,
+        help_text=_("Optional default value of the field."),
+    )
+
+    class Meta:
+        abstract = True
 
     def get_fields(self, **kwargs):
         if self.default_value and "initial" in kwargs:
@@ -148,23 +158,7 @@ class SimpleFieldBase(models.Model):
             }
 
 
-class SimpleChoiceFieldBase(models.Model):
-    type = models.CharField(_("type"), max_length=1000, editable=False)
-
-    label = models.CharField(_("label"), max_length=1000)
-    key = models.SlugField(
-        _("key"),
-        help_text=_(
-            "Data is saved using this key. Changing it may result in data loss."
-        ),
-    )
-    is_required = models.BooleanField(_("is required"), default=True)
-
-    help_text = models.CharField(
-        _("help text"),
-        max_length=1000,
-        blank=True,
-    )
+class SimpleChoiceFieldBase(FieldBase, SimpleFieldMixin):
     choices = models.TextField(
         _("choices"),
         help_text=_("Enter one choice per line."),
@@ -178,29 +172,6 @@ class SimpleChoiceFieldBase(models.Model):
 
     class Meta:
         abstract = True
-
-    def __str__(self):
-        return self.label
-
-    def save(self, *args, **kwargs):
-        self.type = self.TYPE
-        super().save(*args, **kwargs)
-
-    save.alters_data = True
-
-    @classmethod
-    def proxy(cls, type_name, **meta):
-        meta["proxy"] = True
-        meta["app_label"] = cls._meta.app_label
-        meta_class = type("Meta", (cls.Meta,), meta)
-
-        cls = type(
-            f"{cls.__qualname__}_{type_name}",
-            (cls,),
-            {"__module__": cls.__module__, "Meta": meta_class},
-        )
-        cls.TYPE = type_name
-        return cls
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
