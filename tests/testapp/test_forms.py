@@ -91,9 +91,17 @@ class FormsTest(test.TestCase):
         )
 
         kw["type"] = "radio"
+
         item = Select(choices="A\nB is fun", default_value="", **kw)
         item.full_clean()  # Validates just fine
+
+        initial = {}
         self.assertEqual(
-            item.get_fields()["key"].choices,
+            item.get_fields(initial=initial)["key"].choices,
             [("a", "A"), ("b-is-fun", "B is fun")],
         )
+        self.assertNotIn("key", initial)
+
+        item.default_value = "B is fun"
+        item.get_fields(initial=initial)
+        self.assertEqual(initial["key"], "b-is-fun")
