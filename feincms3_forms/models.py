@@ -145,6 +145,8 @@ class SimpleFieldBase(models.Model):
         return [(slugify(value), value) for value in self.choices.splitlines()]
 
     def get_fields(self, *, initial=None, **kwargs):
+        T = self.Type
+
         if self.default_value and initial is not None:
             if self.choices:
                 initial.setdefault(self.key, slugify(self.default_value))
@@ -157,7 +159,7 @@ class SimpleFieldBase(models.Model):
             "help_text": self.help_text,
         }
 
-        if self.type == "textarea":
+        if self.type == T.TEXTAREA:
             return {
                 self.key: forms.CharField(
                     max_length=self.max_length,
@@ -172,7 +174,7 @@ class SimpleFieldBase(models.Model):
                 )
             }
 
-        elif self.type == "date":
+        elif self.type == T.DATE:
             return {
                 self.key: forms.DateField(
                     widget=forms.DateInput(
@@ -182,14 +184,14 @@ class SimpleFieldBase(models.Model):
                 )
             }
 
-        elif self.type == "radio":
+        elif self.type == T.RADIO:
             return {
                 self.key: forms.ChoiceField(
                     widget=forms.RadioSelect(), choices=self.get_choices(), **field_kw
                 ),
             }
 
-        elif self.type == "select":
+        elif self.type == T.SELECT:
             choices = self.get_choices()
             if not self.is_required or not self.default_value:
                 choices = [("", "----------")] + choices
@@ -197,11 +199,10 @@ class SimpleFieldBase(models.Model):
                 self.key: forms.ChoiceField(choices=choices, **field_kw),
             }
 
-        elif self.type in {"email", "url", "checkbox"}:
+        elif self.type in {T.EMAIL, T.URL}:
             field = {
-                "email": forms.EmailField,
-                "url": forms.URLField,
-                "checkbox": forms.BooleanField,
+                T.EMAIL: forms.EmailField,
+                T.URL: forms.URLField,
             }[self.type]
             return {
                 self.key: field(
@@ -210,6 +211,11 @@ class SimpleFieldBase(models.Model):
                     ),
                     **field_kw,
                 ),
+            }
+
+        elif self.type == T.CHECKBOX:
+            return {
+                self.key: forms.BooleanField(**field_kw),
             }
 
         else:
