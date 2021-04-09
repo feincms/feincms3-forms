@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load feincms3 i18n %}
+
+{% block content %}
+
+  <div class="content">
+    <form class="form" method="post">
+      {% csrf_token %}
+      {{ form.errors }}
+      {% for field in form.other_fields %}{{ field }}{% endfor %}
+      {% render_region form_regions 'form' %}
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+{% endblock content %}

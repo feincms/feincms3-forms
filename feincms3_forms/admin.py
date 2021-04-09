@@ -29,7 +29,7 @@ class SimpleFieldInline(ContentEditorInline):
             core = ["label", "key", "is_required", "choices"]
             advanced = ["help_text", "default_value"]
 
-        else:
+        else:  # pragma: no cover
             raise ImproperlyConfigured(f"Unknown type {self.model.TYPE}")
 
         return [

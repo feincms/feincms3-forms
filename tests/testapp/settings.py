@@ -2,6 +2,7 @@ import os
 
 
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -10,6 +11,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "django.contrib.messages",
+    "content_editor",
+    "feincms3",
+    "feincms3_forms",
     "testapp",
 ]
 
@@ -22,7 +26,7 @@ SECRET_KEY = "supersikret"
 LOGIN_REDIRECT_URL = "/?login=1"
 ALLOWED_HOSTS = ["*"]
 
-# ROOT_URLCONF = 'testapp.urls'
+ROOT_URLCONF = "testapp.urls"
 LANGUAGES = (("en", "English"), ("de", "German"))
 
 TEMPLATES = [
