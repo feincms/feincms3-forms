@@ -67,6 +67,7 @@ class FormsTest(test.TestCase):
         }
 
         Select(choices="a\nb", default_value="b", **kw).full_clean()
+        Select(choices="a\nb", default_value="", **kw).full_clean()
 
         with self.assertRaises(ValidationError) as cm:
             Select(choices="a\nb", default_value="c", **kw).full_clean()
