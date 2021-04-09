@@ -114,9 +114,9 @@ class SimpleFieldBase(FieldBase, SimpleFieldMixin):
     class Meta:
         abstract = True
 
-    def get_fields(self, **kwargs):
-        if self.default_value and "initial" in kwargs:
-            kwargs["initial"].setdefault(self.key, self.default_value)
+    def get_fields(self, *, initial=None, **kwargs):
+        if self.default_value and initial is not None:
+            initial.setdefault(self.key, self.default_value)
 
         field_kw = {
             "label": self.label,
@@ -191,9 +191,9 @@ class SimpleChoiceFieldBase(FieldBase, SimpleFieldMixin):
     def get_choices(self):
         return [(slugify(value), value) for value in self.choices.splitlines()]
 
-    def get_fields(self, **kwargs):
-        if self.default_value and "initial" in kwargs:
-            kwargs["initial"].setdefault(self.key, slugify(self.default_value))
+    def get_fields(self, *, initial=None, **kwargs):
+        if self.default_value and initial is not None:
+            initial.setdefault(self.key, slugify(self.default_value))
 
         choices = self.get_choices()
         field_kw = {
