@@ -2,6 +2,7 @@ from content_editor.models import Region
 from django import forms
 from django.db import models
 from django.db.models import signals
+from django.utils.module_loading import import_string
 from django.utils.text import capfirst, slugify
 from django.utils.translation import gettext_lazy as _
 from feincms3.mixins import ChoicesCharField
@@ -35,7 +36,7 @@ class ConfiguredForm(models.Model):
             field.choices = [(row["key"], row["label"]) for row in sender.FORMS]
 
             form_classes = {row["key"]: row["form_class"] for row in sender.FORMS}
-            sender.form_class = property(lambda self: form_classes[self.form])
+            sender.form_class = property(lambda self: import_string(form_classes[self.form]))
 
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
