@@ -110,8 +110,9 @@ class SimpleFieldBase(models.Model):
 
     @classmethod
     def proxy(cls, type_name, **meta):
-        meta["proxy"] = True
         meta["app_label"] = cls._meta.app_label
+        meta["managed"] = False
+        meta["proxy"] = True
 
         if "verbose_name" not in meta and hasattr(type_name, "label"):
             meta["verbose_name"] = type_name.label

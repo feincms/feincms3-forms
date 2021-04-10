@@ -43,11 +43,6 @@ Select = SimpleField.proxy(SimpleField.Type.SELECT)
 Radio = SimpleField.proxy(SimpleField.Type.RADIO)
 
 
-class CaptchaField(ConfiguredFormPlugin):
-    class Meta:
-        abstract = True
-
-
 class Duration(ConfiguredFormPlugin):
     label_from = models.CharField(_("from label"), max_length=1000)
     label_until = models.CharField(_("until label"), max_length=1000)
