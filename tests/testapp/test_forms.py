@@ -119,3 +119,14 @@ class FormsTest(test.TestCase):
                 ("OTHER VALUE", "other pretty label"),
             ],
         )
+
+    def test_other_fields(self):
+        ConfiguredForm.objects.create(name="Test", form="other-fields")
+
+        response = self.client.get("/")
+        self.assertEqual(response.context["form"].prefix, None)
+        self.assertContains(
+            response,
+            '<input type="email" name="email" required>',
+            html=True,
+        )

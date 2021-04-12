@@ -13,6 +13,11 @@ class ConfiguredForm(forms_models.ConfiguredForm):
             "label": _("contact form"),
             "form_class": "testapp.forms.ContactForm",
         },
+        {
+            "key": "other-fields",
+            "label": _("other fields"),
+            "form_class": "testapp.forms.OtherFieldsForm",
+        },
     ]
 
 
