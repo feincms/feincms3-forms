@@ -8,8 +8,8 @@
     <form class="form" method="post">
       {% csrf_token %}
       {{ form.errors }}
-      {% for field in form.other_fields %}{{ field }}{% endfor %}
       {% render_region form_regions 'form' %}
+      {% for field in form.other_fields.values %}{{ field }}{% endfor %}
       <button type="submit">Submit</button>
     </form>
   </div>
