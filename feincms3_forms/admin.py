@@ -16,6 +16,11 @@ class ConfiguredFormAdmin(ContentEditor):
     # Possible hook for validation, with stack hacking: _create_formsets
 
     def validate_configured_form(self, request, obj):
+        if (form := obj.form_class) and hasattr(form, "validate"):
+            if msgs := form.validate(obj):
+                for msg in msgs:
+                    msg.add_to(request)
+
         opts = obj._meta
         obj_url = reverse(
             "admin:%s_%s_change" % (opts.app_label, opts.model_name),
