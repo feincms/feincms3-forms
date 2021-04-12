@@ -105,3 +105,17 @@ class FormsTest(test.TestCase):
         item.default_value = "B is fun"
         item.get_fields(initial=initial)
         self.assertEqual(initial["key"], "b-is-fun")
+
+        item = Select(
+            choices="KEY VALUE | pretty label\n OTHER VALUE | other pretty label \n\n",
+            default_value="",
+            **kw,
+        )
+        item.full_clean()  # Validates just fine
+        self.assertEqual(
+            item.get_fields()["key"].choices,
+            [
+                ("KEY VALUE", "pretty label"),
+                ("OTHER VALUE", "other pretty label"),
+            ],
+        )

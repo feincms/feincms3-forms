@@ -142,7 +142,14 @@ class SimpleFieldBase(models.Model):
                 )
 
     def get_choices(self):
-        return [(slugify(value), value) for value in self.choices.splitlines()]
+        def _choice(value):
+            parts = [part.strip() for part in value.split("|", 1)]
+            if len(parts) == 1:
+                return (slugify(value), value)
+            else:
+                return tuple(parts)
+
+        return [_choice(value) for value in self.choices.splitlines() if value]
 
     def get_fields(self, *, initial=None, **kwargs):
         T = self.Type
