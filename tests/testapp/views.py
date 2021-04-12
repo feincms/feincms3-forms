@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from feincms3.renderer import TemplatePluginRenderer
-from testapp.models import ConfiguredForm, Duration, PlainText, SimpleField
+from testapp.models import ConfiguredForm, Duration, Honeypot, PlainText, SimpleField
 
 from feincms3_forms.regions import FormRegions
 
@@ -16,6 +16,10 @@ renderer.register_template_renderer(
 )
 renderer.register_template_renderer(
     Duration,
+    "forms/simple-field.html",
+)
+renderer.register_template_renderer(
+    Honeypot,
     "forms/simple-field.html",
 )
 

@@ -2,7 +2,7 @@ from django import test
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
-from .models import ConfiguredForm, PlainText, Select, Text
+from .models import ConfiguredForm, Honeypot, PlainText, Select, Text
 
 
 # from django.test.utils import override_settings
@@ -45,6 +45,9 @@ class FormsTest(test.TestCase):
         self.assertContains(response, "&quot;testapp_simplefield_set-2&quot;")
         self.assertContains(response, "&quot;testapp_simplefield_set-8&quot;")
         # print(response, response.content.decode("utf-8"))
+
+        self.assertContains(response, " has been validated.")
+        self.assertContains(response, "&quot;email&quot; key is missing")
 
     def test_form_without_items(self):
         ConfiguredForm.objects.create(name="Test", form="contact")
@@ -130,3 +133,23 @@ class FormsTest(test.TestCase):
             '<input type="email" name="email" required>',
             html=True,
         )
+
+    def test_honeypot(self):
+        cf = ConfiguredForm.objects.create(name="Test", form="contact")
+        Honeypot.objects.create(
+            parent=cf,
+            region="form",
+            ordering=10,
+        )
+
+        response = self.client.get("/")
+        prefix = response.context["form"].prefix
+        self.assertContains(
+            response,
+            f'<input type="hidden" name="{prefix}-honeypot">',
+            html=True,
+        )
+
+        response = self.client.post("/", {f"{prefix}-honeypot": "anything"})
+        self.assertContains(response, "Invalid honeypot value")
+        # print(response, response.content.decode("utf-8"))

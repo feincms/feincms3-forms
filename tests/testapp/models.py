@@ -82,3 +82,16 @@ class Duration(ConfiguredFormPlugin):
                 widget=forms.DateInput(attrs={"type": "date"}),
             ),
         }
+
+
+class HoneypotField(forms.CharField):
+    widget = forms.HiddenInput
+
+    def validate(self, value):
+        if value:
+            raise forms.ValidationError(f"Invalid honeypot value {repr(value)}")
+
+
+class Honeypot(ConfiguredFormPlugin):
+    def get_fields(self, **kwargs):
+        return {"honeypot": HoneypotField()}
