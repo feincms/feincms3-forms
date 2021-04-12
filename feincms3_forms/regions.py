@@ -3,11 +3,19 @@ from hashlib import sha1
 from feincms3.regions import Regions
 
 
+FORM_ITEMS_CONTEXT_KEY = "_feincms3_forms_items"
+
+
 class FormRegions(Regions):
     def get_form(self, *, region, form_class, form_kwargs):
         item_fields = {}
         all_fields = {}
         initial = form_kwargs.setdefault("initial", {})
+
+        context = {
+            FORM_ITEMS_CONTEXT_KEY: {},
+            "form": None,
+        }
 
         if items := self.contents[region]:
             parent = items[0].parent
@@ -23,10 +31,14 @@ class FormRegions(Regions):
         form = type("Form", (form_class,), all_fields.copy())(**form_kwargs)
 
         for item, fields in item_fields.items():
-            item.fields = {key: form[key] for key in fields}
+            context[FORM_ITEMS_CONTEXT_KEY][item] = {key: form[key] for key in fields}
 
         self.other_fields = {
             key: form[key] for key in form.fields if key not in all_fields
         }
 
-        return form
+        return form, context
+
+
+def simple_field_context(plugin, context):
+    return {"plugin": plugin, "fields": context[FORM_ITEMS_CONTEXT_KEY][plugin]}
