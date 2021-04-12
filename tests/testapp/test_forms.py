@@ -124,7 +124,8 @@ class FormsTest(test.TestCase):
         )
 
     def test_other_fields(self):
-        ConfiguredForm.objects.create(name="Test", form="other-fields")
+        cf = ConfiguredForm.objects.create(name="Test", form="other-fields")
+        self.assertEqual(cf.regions, [])
 
         response = self.client.get("/")
         self.assertEqual(response.context["form"].prefix, None)
