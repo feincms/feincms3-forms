@@ -1,9 +1,8 @@
-from content_editor.models import Region
 from django import forms
 from django.db import models
 from django.db.models import signals
 from django.utils.module_loading import import_string
-from django.utils.text import capfirst, slugify
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from feincms3.mixins import ChoicesCharField
 from feincms3.utils import validation_error
@@ -42,14 +41,6 @@ class ConfiguredForm(models.Model):
 
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
-
-
-class FormBase(forms.Form):
-    regions = [Region(key="form", title=capfirst(_("form")))]
-
-    @classmethod
-    def validate(cls, form):
-        pass
 
 
 class SimpleFieldBase(models.Model):

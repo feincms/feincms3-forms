@@ -1,5 +1,7 @@
-from feincms3_forms import models as forms_models
+from content_editor.models import Region
+from django import forms
+from django.utils.translation import gettext_lazy as _
 
 
-class ContactForm(forms_models.FormBase):
-    pass
+class ContactForm(forms.Form):
+    regions = [Region(key="form", title=_("form"))]
