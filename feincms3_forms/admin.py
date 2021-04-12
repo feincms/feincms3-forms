@@ -17,9 +17,8 @@ class ConfiguredFormAdmin(ContentEditor):
 
     def validate_configured_form(self, request, obj):
         if (form := obj.form_class) and hasattr(form, "validate"):
-            if msgs := form.validate(obj):
-                for msg in msgs:
-                    msg.add_to(request)
+            for msg in form.validate(obj):
+                msg.add_to(request)
 
         opts = obj._meta
         obj_url = reverse(
