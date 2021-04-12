@@ -25,7 +25,7 @@ class ConfiguredForm(models.Model):
     def regions(self):
         try:
             return self.form_class.regions
-        except KeyError:
+        except (AttributeError, KeyError):
             return []
 
     @staticmethod
