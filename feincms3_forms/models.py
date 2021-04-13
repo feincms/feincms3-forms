@@ -1,6 +1,7 @@
 from django import forms
 from django.db import models
 from django.db.models import signals
+from django.db.models.fields import BLANK_CHOICE_DASH
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -192,7 +193,7 @@ class SimpleFieldBase(models.Model):
         elif self.type == T.SELECT:
             choices = self.get_choices()
             if not self.is_required or not self.default_value:
-                choices = [("", "----------")] + choices
+                choices = BLANK_CHOICE_DASH + choices
             return {
                 self.key: forms.ChoiceField(choices=choices, **field_kw),
             }

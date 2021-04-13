@@ -74,7 +74,7 @@ class FormsTest(test.TestCase):
         item.full_clean()  # Validates just fine
         self.assertEqual(
             item.get_fields()["key"].choices,
-            [("", "----------"), ("a", "a"), ("b", "b")],
+            [("", "---------"), ("a", "a"), ("b", "b")],
         )
 
         item.default_value = "b"
