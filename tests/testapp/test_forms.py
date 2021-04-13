@@ -53,7 +53,7 @@ class FormsTest(test.TestCase):
         ConfiguredForm.objects.create(name="Test", form="contact")
         response = self.client.get("/")
         prefix = response.context["form"].prefix
-        self.assertEqual(prefix, None)
+        self.assertTrue(bool(prefix))
 
     def test_unconfigured_form(self):
         cf = ConfiguredForm.objects.create()
@@ -128,10 +128,10 @@ class FormsTest(test.TestCase):
         self.assertEqual(cf.regions, [])
 
         response = self.client.get("/")
-        self.assertEqual(response.context["form"].prefix, None)
+        prefix = response.context["form"].prefix
         self.assertContains(
             response,
-            '<input type="email" name="email" required>',
+            f'<input type="email" name="{prefix}-email" required>',
             html=True,
         )
 
