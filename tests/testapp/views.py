@@ -4,12 +4,7 @@ from feincms3.regions import Regions
 from feincms3.renderer import TemplatePluginRenderer
 from testapp.models import ConfiguredForm, Duration, Honeypot, PlainText, SimpleField
 
-from feincms3_forms.renderer import (
-    create_form,
-    other_fields,
-    short_prefix,
-    simple_field_context,
-)
+from feincms3_forms.renderer import create_form, short_prefix, simple_field_context
 
 
 renderer = TemplatePluginRenderer()
@@ -58,7 +53,7 @@ def form(request):
         {
             "form": form,
             "form_regions": Regions.from_contents(contents, renderer=renderer),
-            "form_other_fields": other_fields(context),
+            "form_other_fields": form.get_form_fields(None),
         }
     )
 
