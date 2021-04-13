@@ -9,10 +9,6 @@ def short_prefix(obj, postfix=""):
     return sha1(identifier.encode("utf-8")).hexdigest()[:6]
 
 
-def simple_field_context(plugin, context):
-    return {"plugin": plugin, "fields": context["form"].get_form_fields(plugin)}
-
-
 class FormMixin:
     def get_form_fields(self, item):
         return self._f3f_item_fields[item]
