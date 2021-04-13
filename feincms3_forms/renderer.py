@@ -24,6 +24,7 @@ def create_form(items, *, context, form_class=forms.Form, form_kwargs):
         if hasattr(item, "get_fields")
     }
     all_fields = reduce(lambda a, b: {**a, **b}, item_fields.values(), {})
+    all_keys = set(all_fields)
 
     form = type("Form", (FormMixin, form_class), all_fields)(**form_kwargs)
     form._f3f_item_fields = {
@@ -31,7 +32,7 @@ def create_form(items, *, context, form_class=forms.Form, form_kwargs):
             item: {key: form[key] for key in fields}
             for item, fields in item_fields.items()
         },
-        **{None: {key: form[key] for key in form.fields if key not in all_fields}},
+        **{None: {key: form[key] for key in form.fields if key not in all_keys}},
     }
 
     return form

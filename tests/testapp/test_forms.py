@@ -31,6 +31,7 @@ class FormsTest(test.TestCase):
         self.assertContains(
             response,
             f'<input type="text" name="{prefix}-full_name" required>',
+            1,
             html=True,
         )
 
@@ -132,6 +133,7 @@ class FormsTest(test.TestCase):
         self.assertContains(
             response,
             f'<input type="email" name="{prefix}-email" required>',
+            1,
             html=True,
         )
 
