@@ -49,12 +49,8 @@ def form(request):
     if form.is_valid():
         return form.process(request)
 
-    context.update(
-        {
-            "form": form,
-            "form_regions": Regions.from_contents(contents, renderer=renderer),
-            "form_other_fields": form.get_form_fields(None),
-        }
-    )
+    context["form"] = form
+    context["form_other_fields"] = form.get_form_fields(None)
+    context["form_regions"] = Regions.from_contents(contents, renderer=renderer)
 
     return render(request, "forms/form.html", context)
