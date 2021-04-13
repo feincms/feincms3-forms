@@ -25,7 +25,7 @@ class FormRegions(Regions):
         for item, fields in item_fields.items():
             item.fields = {key: form[key] for key in fields}
 
-        form.other_fields = {
+        self.other_fields = {
             key: form[key] for key in form.fields if key not in all_fields
         }
 
