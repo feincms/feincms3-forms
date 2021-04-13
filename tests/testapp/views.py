@@ -30,7 +30,7 @@ def form(request):
 
     context["form_regions"] = regions = FormRegions.from_item(cf, renderer=renderer)
     context["form"] = form = regions.get_form(
-        items=regions.contents["form"],
+        region="form",
         form_class=cf.form_class,
         form_kwargs={"data": request.POST, "files": request.FILES}
         if request.method == "POST"
