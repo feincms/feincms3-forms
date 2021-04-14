@@ -48,7 +48,7 @@ class FormsTest(test.TestCase):
         self.assertContains(response, "&quot;testapp_simplefield_set-8&quot;")
         # print(response, response.content.decode("utf-8"))
 
-        self.assertContains(response, " has been validated.")
+        self.assertContains(response, "Validation of ")
         self.assertContains(
             response, "Field with a name of &quot;email&quot; is missing"
         )
