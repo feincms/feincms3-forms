@@ -36,5 +36,8 @@ def concrete_descendant_models(plugin_base):
     ]
 
 
-def concrete_descendant_instances(plugin_base):
-    return {cls: cls.objects.all() for cls in concrete_descendant_models(plugin_base)}
+def concrete_descendant_instances(plugin_base, parent):
+    return {
+        cls: cls.objects.filter(parent=parent)
+        for cls in concrete_descendant_models(plugin_base)
+    }

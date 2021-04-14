@@ -9,8 +9,8 @@ from testapp.models import ConfiguredFormPlugin
 from feincms3_forms.validation import Error, concrete_descendant_instances
 
 
-def validate_contact_form(form):
-    instances = concrete_descendant_instances(ConfiguredFormPlugin)
+def validate_contact_form(cf):
+    instances = concrete_descendant_instances(ConfiguredFormPlugin, cf)
     names = set(field.name for field in chain.from_iterable(instances.values()))
 
     if "email" not in names:
