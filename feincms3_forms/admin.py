@@ -16,10 +16,6 @@ class ConfiguredFormAdmin(ContentEditor):
     # Possible hook for validation, with stack hacking: _create_formsets
 
     def validate_configured_form(self, request, obj):
-        if type := obj.type:
-            for msg in type.validate(obj):
-                msg.add_to(request)
-
         opts = obj._meta
         obj_url = reverse(
             "admin:%s_%s_change" % (opts.app_label, opts.model_name),
@@ -30,9 +26,33 @@ class ConfiguredFormAdmin(ContentEditor):
             obj_repr = format_html('<a href="{}">{}</a>', urlquote(obj_url), obj)
         else:
             obj_repr = str(obj)
-        messages.info(
-            request, format_html(_('"{obj}" has been validated.'), obj=obj_repr)
-        )
+
+        if type := obj.type:
+            if msgs := type.validate(obj):
+                for msg in msgs:
+                    msg.add_to(request)
+                messages.warning(
+                    request,
+                    format_html(
+                        _('Validation of "{obj}" wasn\'t completely successful.'),
+                        obj=obj_repr,
+                    ),
+                )
+            else:
+                messages.success(
+                    request, format_html(_('"{obj}" has been validated.'), obj=obj_repr)
+                )
+        else:
+            messages.warning(
+                request,
+                format_html(
+                    _(
+                        '"{obj}" could not be validated because'
+                        " it seems to have an invalid type."
+                    ),
+                    obj=obj_repr,
+                ),
+            )
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change=change)
