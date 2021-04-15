@@ -9,8 +9,24 @@ from django.utils.translation import gettext_lazy as _
 from feincms3.utils import ChoicesCharField, validation_error
 
 
+def import_if_string(obj_or_path):
+    return import_string(obj_or_path) if isinstance(obj_or_path, str) else obj_or_path
+
+
 class FormType(Type):
-    _REQUIRED = {"key", "label", "form_class"}
+    _REQUIRED = {"key", "label", "form_class", "validate"}
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("validate", lambda form: [])
+        super().__init__(**kwargs)
+
+    @property
+    def form_class(self):
+        return import_if_string(self.get("form_class"))
+
+    @property
+    def validate(self):
+        return import_if_string(self.get("validate"))
 
 
 class ConfiguredForm(models.Model):
@@ -29,7 +45,7 @@ class ConfiguredForm(models.Model):
     @property
     def regions(self):
         try:
-            return self.form_class.regions
+            return self.type.form_class.regions
         except (AttributeError, KeyError):
             return []
 
@@ -39,10 +55,8 @@ class ConfiguredForm(models.Model):
             field = sender._meta.get_field("form")
             field.choices = [(row["key"], row["label"]) for row in sender.FORMS]
 
-            form_classes = {row["key"]: row["form_class"] for row in sender.FORMS}
-            sender.form_class = property(
-                lambda self: import_string(form_classes[self.form])
-            )
+            types = {type.key: type for type in sender.FORMS}
+            sender.type = property(lambda self: import_if_string(types[self.form]))
 
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)

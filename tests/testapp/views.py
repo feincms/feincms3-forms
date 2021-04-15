@@ -46,7 +46,7 @@ def form(request):
     form = create_form(
         contents["form"],
         context=context,
-        form_class=cf.form_class,
+        form_class=cf.type.form_class,
         form_kwargs=form_kwargs,
     )
 

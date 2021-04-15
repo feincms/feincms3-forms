@@ -16,8 +16,8 @@ class ConfiguredFormAdmin(ContentEditor):
     # Possible hook for validation, with stack hacking: _create_formsets
 
     def validate_configured_form(self, request, obj):
-        if (form := obj.form_class) and hasattr(form, "validate"):
-            for msg in form.validate(obj):
+        if type := obj.type:
+            for msg in type.validate(obj):
                 msg.add_to(request)
 
         opts = obj._meta

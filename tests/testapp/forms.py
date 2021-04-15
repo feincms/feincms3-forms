@@ -7,15 +7,15 @@ from django.utils.translation import gettext_lazy as _
 from feincms3_forms.validation import Error
 
 
+def validate_contact_form(form):
+    keys = set(form.testapp_simplefield_set.values_list("key", flat=True))
+
+    if "email" not in keys:
+        yield Error(_('"email" key is missing'))
+
+
 class ContactForm(forms.Form):
     regions = [Region(key="form", title=_("form"))]
-
-    @classmethod
-    def validate(cls, form):
-        keys = set(form.testapp_simplefield_set.values_list("key", flat=True))
-
-        if "email" not in keys:
-            yield Error(_('"email" key is missing'))
 
     def process(self, request):
         print("Sending mail to", self.cleaned_data)
