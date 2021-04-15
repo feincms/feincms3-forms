@@ -50,6 +50,11 @@ class FormsTest(test.TestCase):
         self.assertContains(response, " has been validated.")
         self.assertContains(response, "&quot;email&quot; key is missing")
 
+        cf = ConfiguredForm.objects.create(name="Test", form="other-fields")
+        response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
+        self.assertContains(response, " has been validated.")
+        self.assertContains(response, "Listen to the radio")
+
     def test_form_without_items(self):
         ConfiguredForm.objects.create(name="Test", form="contact")
         response = self.client.get("/")

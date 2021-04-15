@@ -49,7 +49,7 @@ Integer = SimpleField.proxy(SimpleField.Type.INTEGER)
 Textarea = SimpleField.proxy(SimpleField.Type.TEXTAREA)
 Checkbox = SimpleField.proxy(SimpleField.Type.CHECKBOX)
 Select = SimpleField.proxy(SimpleField.Type.SELECT)
-Radio = SimpleField.proxy(SimpleField.Type.RADIO)
+Radio = SimpleField.proxy(SimpleField.Type.RADIO, verbose_name="Listen to the radio")
 
 
 class CaptchaField(ConfiguredFormPlugin):
