@@ -2,7 +2,7 @@ from django import test
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
-from .models import ConfiguredForm, Honeypot, PlainText, Select, Text
+from .models import ConfiguredForm, Email, Honeypot, PlainText, Select, Text
 
 
 # from django.test.utils import override_settings
@@ -49,6 +49,15 @@ class FormsTest(test.TestCase):
 
         self.assertContains(response, " has been validated.")
         self.assertContains(response, "&quot;email&quot; key is missing")
+
+        Email.objects.create(
+            parent=cf,
+            region="form",
+            ordering=10,
+            label="Email",
+            key="email",
+        )
+        self.assertEqual(list(cf.type.validate(cf)), [])
 
         cf = ConfiguredForm.objects.create(name="Test", form="other-fields")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")

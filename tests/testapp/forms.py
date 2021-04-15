@@ -1,13 +1,21 @@
+from itertools import chain
+
 from django import forms
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.utils.translation import gettext_lazy as _
+from testapp.models import ConfiguredFormPlugin
 
-from feincms3_forms.validation import Error
+from feincms3_forms.validation import Error, concrete_descendant_instances
 
 
 def validate_contact_form(form):
-    keys = set(form.testapp_simplefield_set.values_list("key", flat=True))
+    instances = concrete_descendant_instances(ConfiguredFormPlugin)
+    keys = set(
+        chain.from_iterable(
+            (field.key for field in fields) for fields in instances.values()
+        )
+    )
 
     if "email" not in keys:
         yield Error(_('"email" key is missing'))
