@@ -14,13 +14,14 @@ def validate_contact_form(form):
         yield Error(_('"email" key is missing'))
 
 
+def process_contact_form(request, form):
+    print("Sending mail to", form.cleaned_data)
+    messages.success(request, _("Successfully sent the mail (not really!)"))
+    return HttpResponseRedirect(".")
+
+
 class ContactForm(forms.Form):
     regions = [Region(key="form", title=_("form"))]
-
-    def process(self, request):
-        print("Sending mail to", self.cleaned_data)
-        messages.success(request, _("Successfully sent the mail (not really!)"))
-        return HttpResponseRedirect(".")
 
 
 class OtherFieldsForm(forms.Form):

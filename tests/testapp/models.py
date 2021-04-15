@@ -13,6 +13,7 @@ class ConfiguredForm(forms_models.ConfiguredForm):
             label=_("contact form"),
             form_class="testapp.forms.ContactForm",
             validate="testapp.forms.validate_contact_form",
+            process="testapp.forms.process_contact_form",
         ),
         forms_models.FormType(
             key="other-fields",

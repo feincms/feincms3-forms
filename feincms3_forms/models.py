@@ -13,6 +13,14 @@ def import_if_string(obj_or_path):
     return import_string(obj_or_path) if isinstance(obj_or_path, str) else obj_or_path
 
 
+class ImportDescriptor:
+    def __set_name__(self, owner, name):
+        self._name = name
+
+    def __get__(self, obj, type=None):
+        return import_if_string(obj.get(self._name))
+
+
 class FormType(Type):
     _REQUIRED = {"key", "label", "form_class", "validate"}
 
@@ -20,13 +28,9 @@ class FormType(Type):
         kwargs.setdefault("validate", lambda form: [])
         super().__init__(**kwargs)
 
-    @property
-    def form_class(self):
-        return import_if_string(self.get("form_class"))
-
-    @property
-    def validate(self):
-        return import_if_string(self.get("validate"))
+    form_class = ImportDescriptor()
+    process = ImportDescriptor()
+    validate = ImportDescriptor()
 
 
 class ConfiguredForm(models.Model):
