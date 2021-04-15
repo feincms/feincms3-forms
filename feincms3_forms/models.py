@@ -98,7 +98,33 @@ class KeyField(models.CharField):
         return name, "django.db.models.CharField", args, kwargs
 
 
-class SimpleFieldBase(models.Model):
+class FormField(models.Model):
+    label = models.CharField(_("label"), max_length=1000)
+    key = KeyField()
+    is_required = models.BooleanField(_("is required"), default=True)
+    help_text = models.CharField(
+        _("help text"),
+        max_length=1000,
+        blank=True,
+    )
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.label
+
+    def get_fields(self, *, form_class, **kwargs):
+        return {
+            self.key: form_class(
+                label=self.label,
+                required=self.is_required,
+                help_text=self.help_text,
+            )
+        }
+
+
+class SimpleFieldBase(FormField):
     class Type(models.TextChoices):
         TEXT = "text", _("text field")
         EMAIL = "email", _("email address field")
@@ -111,15 +137,6 @@ class SimpleFieldBase(models.Model):
         RADIO = "radio", _("radio input field")
 
     type = models.CharField(_("type"), max_length=1000, editable=False)
-
-    label = models.CharField(_("label"), max_length=1000)
-    key = KeyField()
-    is_required = models.BooleanField(_("is required"), default=True)
-    help_text = models.CharField(
-        _("help text"),
-        max_length=1000,
-        blank=True,
-    )
 
     choices = models.TextField(
         _("choices"),
@@ -140,9 +157,6 @@ class SimpleFieldBase(models.Model):
 
     class Meta:
         abstract = True
-
-    def __str__(self):
-        return self.label
 
     def save(self, *args, **kwargs):
         self.type = self.TYPE

@@ -47,32 +47,49 @@ class ConfiguredFormAdmin(ContentEditor):
         return super().render_change_form(request, context, obj=obj, **kwargs)
 
 
-class SimpleFieldInline(ContentEditorInline):
+class FormFieldInline(ContentEditorInline):
+    def get_formfield_fieldsets(self, core, advanced):
+        return [
+            (None, {"fields": core + ["ordering", "region"]}),
+            (_("Advanced"), {"fields": advanced, "classes": ["collapse"]}),
+        ]
+
+    def get_fieldsets(self, request, obj=None):
+        return self.get_formfield_fieldsets(
+            ["label", "key", "is_required"],
+            ["help_text"],
+        )
+
+
+class SimpleFieldInline(FormFieldInline):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(type=self.model.TYPE)
 
     def get_fieldsets(self, request, obj=None):
         T = self.model.Type
         if self.model.TYPE in {T.TEXT, T.TEXTAREA}:
-            core = ["label", "key", "is_required"]
-            advanced = ["help_text", "placeholder", "default_value", "max_length"]
+            return self.get_formfield_fieldsets(
+                ["label", "key", "is_required"],
+                ["help_text", "placeholder", "default_value", "max_length"],
+            )
 
         elif self.model.TYPE in {T.EMAIL, T.URL, T.DATE, T.INTEGER}:
-            core = ["label", "key", "is_required"]
-            advanced = ["help_text", "placeholder", "default_value"]
+            return self.get_formfield_fieldsets(
+                ["label", "key", "is_required"],
+                ["help_text", "placeholder", "default_value"],
+            )
 
         elif self.model.TYPE in {T.CHECKBOX}:
-            core = ["label", "key", "is_required"]
-            advanced = ["help_text", "default_value"]
+            return self.get_formfield_fieldsets(
+                ["label", "key", "is_required"],
+                ["help_text", "default_value"],
+            )
 
         elif self.model.TYPE in {T.SELECT, T.RADIO}:
-            core = ["label", "key", "is_required", "choices"]
-            advanced = ["help_text", "default_value"]
+            return self.get_formfield_fieldsets(
+                ["label", "key", "is_required", "choices"],
+                ["help_text", "default_value"],
+            )
 
         else:  # pragma: no cover
             raise ImproperlyConfigured(f"Unknown type {self.model.TYPE}")
-
-        return [
-            (None, {"fields": core + ["ordering", "region"]}),
-            (_("Advanced"), {"fields": advanced, "classes": ["collapse"]}),
-        ]
