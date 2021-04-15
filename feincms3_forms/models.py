@@ -1,5 +1,6 @@
 from content_editor.models import Type
 from django import forms
+from django.core import validators
 from django.db import models
 from django.db.models import signals
 from django.db.models.fields import BLANK_CHOICE_DASH
@@ -67,6 +68,33 @@ class ConfiguredForm(models.Model):
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
 
 
+class KeyField(models.CharField):
+    def __init__(self, **kwargs):
+        kwargs.setdefault("verbose_name", _("key"))
+        kwargs.setdefault("max_length", 50)
+        kwargs.setdefault(
+            "validators",
+            [
+                validators.RegexValidator(
+                    r"^[a-z0-9_]+$",
+                    message=_(
+                        "Enter a value consisting only of lowercase letters,"
+                        " numbers and the underscore."
+                    ),
+                ),
+            ],
+        )
+        kwargs.setdefault(
+            "help_text",
+            _("Data is saved using this key. Changing it may result in data loss."),
+        )
+        super().__init__(**kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        return name, "django.db.models.CharField", args, kwargs
+
+
 class SimpleFieldBase(models.Model):
     class Type(models.TextChoices):
         TEXT = "text", _("text field")
@@ -81,12 +109,7 @@ class SimpleFieldBase(models.Model):
     type = models.CharField(_("type"), max_length=1000, editable=False)
 
     label = models.CharField(_("label"), max_length=1000)
-    key = models.SlugField(
-        _("key"),
-        help_text=_(
-            "Data is saved using this key. Changing it may result in data loss."
-        ),
-    )
+    key = KeyField()
     is_required = models.BooleanField(_("is required"), default=True)
     help_text = models.CharField(
         _("help text"),
