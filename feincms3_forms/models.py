@@ -6,8 +6,7 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
-from feincms3.mixins import ChoicesCharField
-from feincms3.utils import validation_error
+from feincms3.utils import ChoicesCharField, validation_error
 
 
 class FormType(Type):
