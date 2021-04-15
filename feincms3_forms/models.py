@@ -86,7 +86,10 @@ class KeyField(models.CharField):
         )
         kwargs.setdefault(
             "help_text",
-            _("Data is saved using this key. Changing it may result in data loss."),
+            _(
+                "Data is saved using this key. Changing it may result in data loss."
+                " This field only allows a-z, 0-9 and _ as characters."
+            ),
         )
         super().__init__(**kwargs)
 

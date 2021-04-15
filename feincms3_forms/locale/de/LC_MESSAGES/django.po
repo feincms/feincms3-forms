@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-09 14:33+0200\n"
+"POT-Creation-Date: 2021-04-15 11:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,105 +18,120 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:37
+#: admin.py:34
+#, python-brace-format
+msgid "\"{obj}\" has been validated."
+msgstr "\"{obj}\" wurde validiert."
+
+#: admin.py:77
 msgid "Advanced"
 msgstr "Fortgeschritten"
 
-#: models.py:13
+#: models.py:39
 msgid "name"
 msgstr "Name"
 
-#: models.py:14 models.py:48
+#: models.py:40
 msgid "form"
 msgstr "Formular"
 
-#: models.py:19 models.py:20
+#: models.py:45 models.py:46
 msgid "configured form"
 msgstr "Konfiguriertes Formular"
 
-#: models.py:57
-msgid "text field"
-msgstr "Textfeld"
-
-#: models.py:58
-msgid "email address field"
-msgstr "E-Mail-Feld"
-
-#: models.py:59
-msgid "URL field"
-msgstr "URL-Feld"
-
-#: models.py:60
-msgid "date field"
-msgstr "Datumsfeld"
-
-#: models.py:61
-msgid "multiline text field"
-msgstr "Mehrzeiliges Textfeld"
-
-#: models.py:62
-msgid "checkbox field"
-msgstr "Checkbox-Feld"
-
-#: models.py:63
-msgid "dropdown field"
-msgstr "Dropdown-Feld"
-
-#: models.py:64
-msgid "radio input field"
-msgstr "Radioauswahl-Feld"
-
-#: models.py:66
-msgid "type"
-msgstr "Typ"
-
-#: models.py:68
-msgid "label"
-msgstr "Beschriftung"
-
-#: models.py:70
+#: models.py:73
 msgid "key"
 msgstr "Schlüssel"
 
-#: models.py:72
-msgid "Data is saved using this key. Changing it may result in data loss."
+#: models.py:81
+msgid ""
+"Enter a value consisting only of lowercase letters, numbers and the "
+"underscore."
+msgstr ""
+"Geben Sie einen Wert ein, welcher nur Kleinbuchstaben, Zahlen und "
+"Unterstriche enthält."
+
+#: models.py:90
+msgid ""
+"Data is saved using this key. Changing it may result in data loss. This "
+"field only allows a-z, 0-9 and _ as characters."
 msgstr ""
 "Die Daten werden mit diesem Schlüssel gespeichert. Änderungen könnten "
-"Datenverlust zur Folge haben."
+"Datenverlust zur Folge haben. Erlaubte Zeichen sind a-z, 0-9 und _."
 
-#: models.py:75
+#: models.py:103
+msgid "text field"
+msgstr "Textfeld"
+
+#: models.py:104
+msgid "email address field"
+msgstr "E-Mail-Feld"
+
+#: models.py:105
+msgid "URL field"
+msgstr "URL-Feld"
+
+#: models.py:106
+msgid "date field"
+msgstr "Datumsfeld"
+
+#: models.py:107
+msgid "multiline text field"
+msgstr "Mehrzeiliges Textfeld"
+
+#: models.py:108
+msgid "checkbox field"
+msgstr "Checkbox-Feld"
+
+#: models.py:109
+msgid "dropdown field"
+msgstr "Dropdown-Feld"
+
+#: models.py:110
+msgid "radio input field"
+msgstr "Radioauswahl-Feld"
+
+#: models.py:112
+msgid "type"
+msgstr "Typ"
+
+#: models.py:114
+msgid "label"
+msgstr "Beschriftung"
+
+#: models.py:116
 msgid "is required"
 msgstr "ist notwendig"
 
-#: models.py:77
+#: models.py:118
 msgid "help text"
 msgstr "Hilfstext"
 
-#: models.py:83
+#: models.py:124
 msgid "choices"
 msgstr "Auswahl"
 
-#: models.py:84
+#: models.py:125
 msgid "Enter one choice per line."
 msgstr "Eine Auswahlmöglichkeit pro Zeile."
 
-#: models.py:87
+#: models.py:128
 msgid "placeholder"
 msgstr "Platzhalter"
 
-#: models.py:92
+#: models.py:133
 msgid "default value"
 msgstr "Standardwert"
 
-#: models.py:95
+#: models.py:136
 msgid "Optional default value of the field."
 msgstr "Optionaler vorgegebener Standardwert für das Feld."
 
-#: models.py:97
+#: models.py:138
 msgid "max length"
 msgstr "Maximale Länge"
 
-#: models.py:136
+#: models.py:177
 #, python-format
 msgid ""
 "The specified default value \"%(default)s\" isn't part of the available "
