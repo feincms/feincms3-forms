@@ -41,6 +41,10 @@ class ConfiguredFormAdmin(ConfiguredFormAdmin):
             button='<i class="material-icons">event</i>',
         ),
         SimpleFieldInline.create(
+            model=models.Integer,
+            button='<i class="material-icons">looks_one</i>',
+        ),
+        SimpleFieldInline.create(
             model=models.Textarea,
             button='<i class="material-icons">notes</i>',
         ),
