@@ -1,4 +1,4 @@
-from content_editor.models import create_plugin_base
+from content_editor.models import Region, create_plugin_base
 from django import forms
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -11,13 +11,14 @@ class ConfiguredForm(forms_models.ConfiguredForm):
         forms_models.FormType(
             key="contact",
             label=_("contact form"),
-            form_class="testapp.forms.ContactForm",
+            regions=[Region(key="form", title=_("form"))],
             validate="testapp.forms.validate_contact_form",
             process="testapp.forms.process_contact_form",
         ),
         forms_models.FormType(
             key="other-fields",
             label=_("other fields"),
+            regions=[],
             form_class="testapp.forms.OtherFieldsForm",
         ),
     ]

@@ -1,4 +1,3 @@
-from content_editor.models import Region
 from django import forms
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -18,10 +17,6 @@ def process_contact_form(request, form):
     print("Sending mail to", form.cleaned_data)
     messages.success(request, _("Successfully sent the mail (not really!)"))
     return HttpResponseRedirect(".")
-
-
-class ContactForm(forms.Form):
-    regions = [Region(key="form", title=_("form"))]
 
 
 class OtherFieldsForm(forms.Form):

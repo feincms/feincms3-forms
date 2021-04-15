@@ -22,9 +22,10 @@ class ImportDescriptor:
 
 
 class FormType(Type):
-    _REQUIRED = {"key", "label", "form_class", "validate"}
+    _REQUIRED = {"key", "label", "regions", "form_class", "validate"}
 
     def __init__(self, **kwargs):
+        kwargs.setdefault("form_class", forms.Form)
         kwargs.setdefault("validate", lambda form: [])
         super().__init__(**kwargs)
 
@@ -49,7 +50,7 @@ class ConfiguredForm(models.Model):
     @property
     def regions(self):
         try:
-            return self.type.form_class.regions
+            return self.type.regions
         except (AttributeError, KeyError):
             return []
 
