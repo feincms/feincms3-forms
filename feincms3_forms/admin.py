@@ -57,7 +57,7 @@ class SimpleFieldInline(ContentEditorInline):
             core = ["label", "key", "is_required"]
             advanced = ["help_text", "placeholder", "default_value", "max_length"]
 
-        elif self.model.TYPE in {T.EMAIL, T.URL, T.DATE}:
+        elif self.model.TYPE in {T.EMAIL, T.URL, T.DATE, T.INTEGER}:
             core = ["label", "key", "is_required"]
             advanced = ["help_text", "placeholder", "default_value"]
 

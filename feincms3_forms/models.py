@@ -104,6 +104,7 @@ class SimpleFieldBase(models.Model):
         EMAIL = "email", _("email address field")
         URL = "url", _("URL field")
         DATE = "date", _("date field")
+        INTEGER = "integer", _("integer field")
         TEXTAREA = "textarea", _("multiline text field")
         CHECKBOX = "checkbox", _("checkbox field")
         SELECT = "select", _("dropdown field")
@@ -247,10 +248,11 @@ class SimpleFieldBase(models.Model):
                 self.key: forms.ChoiceField(choices=choices, **field_kw),
             }
 
-        elif self.type in {T.EMAIL, T.URL}:
+        elif self.type in {T.EMAIL, T.URL, T.INTEGER}:
             field = {
                 T.EMAIL: forms.EmailField,
                 T.URL: forms.URLField,
+                T.INTEGER: forms.IntegerField,
             }[self.type]
             return {
                 self.key: field(
