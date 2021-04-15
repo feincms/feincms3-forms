@@ -8,16 +8,16 @@ from feincms3_forms import models as forms_models
 
 class ConfiguredForm(forms_models.ConfiguredForm):
     FORMS = [
-        {
-            "key": "contact",
-            "label": _("contact form"),
-            "form_class": "testapp.forms.ContactForm",
-        },
-        {
-            "key": "other-fields",
-            "label": _("other fields"),
-            "form_class": "testapp.forms.OtherFieldsForm",
-        },
+        forms_models.FormType(
+            key="contact",
+            label=_("contact form"),
+            form_class="testapp.forms.ContactForm",
+        ),
+        forms_models.FormType(
+            key="other-fields",
+            label=_("other fields"),
+            form_class="testapp.forms.OtherFieldsForm",
+        ),
     ]
 
 

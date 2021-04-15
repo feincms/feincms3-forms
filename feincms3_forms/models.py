@@ -1,3 +1,4 @@
+from content_editor.models import Type
 from django import forms
 from django.db import models
 from django.db.models import signals
@@ -7,6 +8,10 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from feincms3.mixins import ChoicesCharField
 from feincms3.utils import validation_error
+
+
+class FormType(Type):
+    _REQUIRED = {"key", "label", "form_class"}
 
 
 class ConfiguredForm(models.Model):
