@@ -92,6 +92,7 @@ class HoneypotField(forms.CharField):
     widget = forms.HiddenInput
 
     def validate(self, value):
+        super().validate(value)
         if value:
             raise forms.ValidationError(f"Invalid honeypot value {repr(value)}")
 
