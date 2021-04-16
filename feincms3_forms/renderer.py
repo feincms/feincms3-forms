@@ -15,7 +15,6 @@ class FormMixin:
 
 
 def create_form(items, *, context, form_class=forms.Form, form_kwargs):
-    form_kwargs.setdefault("auto_id", None)
     initial = form_kwargs.setdefault("initial", {})
 
     item_fields = {
