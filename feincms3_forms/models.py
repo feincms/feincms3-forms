@@ -69,7 +69,7 @@ class ConfiguredForm(models.Model):
     def get_formfields_union(self, *, plugins, values=["name"], flat=True):
         qs = None
         for plugin in plugins:
-            if not hasattr(plugin, "get_fields"):
+            if not issubclass(plugin, FormField):
                 continue
             plugin_qs = plugin.objects.filter(parent=self).values_list(
                 *values, flat=flat
