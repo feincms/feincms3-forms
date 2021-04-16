@@ -4,14 +4,15 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import gettext_lazy as _
 from testapp.views import renderer
 
-from feincms3_forms.validation import Error
+from feincms3_forms.validation import validate_required_fields, validate_uniqueness
 
 
 def validate_contact_form(cf):
     names = list(cf.get_formfields_union(plugins=renderer.plugins()))
-
-    if "email" not in names:
-        yield Error(_('Field with a name of "email" is missing.'))
+    return [
+        *validate_uniqueness(names),
+        *validate_required_fields(names, {"email"}),
+    ]
 
 
 def process_contact_form(request, form):

@@ -49,9 +49,7 @@ class FormsTest(test.TestCase):
         # print(response, response.content.decode("utf-8"))
 
         self.assertContains(response, "Validation of ")
-        self.assertContains(
-            response, "Field with a name of &quot;email&quot; is missing"
-        )
+        self.assertContains(response, "Required fields are missing: email")
 
         Email.objects.create(
             parent=cf,
