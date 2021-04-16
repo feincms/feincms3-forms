@@ -136,6 +136,15 @@ class FormField(models.Model):
         kwargs.setdefault("help_text", self.help_text)
         return {self.name: form_class(**kwargs)}
 
+    def get_loaders(self):
+        return [
+            lambda data: {
+                "label": self.label,
+                "name": self.name,
+                "value": data.get(self.name),
+            }
+        ]
+
 
 class SimpleFieldBase(FormField):
     class Type(models.TextChoices):
