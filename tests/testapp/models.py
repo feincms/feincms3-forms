@@ -60,12 +60,7 @@ class CaptchaField(ConfiguredFormPlugin):
 class Duration(ConfiguredFormPlugin):
     label_from = models.CharField(_("from label"), max_length=1000)
     label_until = models.CharField(_("until label"), max_length=1000)
-    key = models.SlugField(
-        _("key"),
-        help_text=_(
-            "Data is saved using this key. Changing it may result in data loss."
-        ),
-    )
+    name = forms_models.NameField()
 
     class Meta:
         verbose_name = _("duration")
@@ -75,12 +70,12 @@ class Duration(ConfiguredFormPlugin):
 
     def get_fields(self, **kwargs):
         return {
-            f"{self.key}_from": forms.DateField(
+            f"{self.name}_from": forms.DateField(
                 label=self.label_from,
                 required=True,
                 widget=forms.DateInput(attrs={"type": "date"}),
             ),
-            f"{self.key}_until": forms.DateField(
+            f"{self.name}_until": forms.DateField(
                 label=self.label_until,
                 required=True,
                 widget=forms.DateInput(attrs={"type": "date"}),

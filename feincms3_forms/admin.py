@@ -56,7 +56,7 @@ class FormFieldInline(ContentEditorInline):
 
     def get_fieldsets(self, request, obj=None):
         return self.get_formfield_fieldsets(
-            ["label", "key", "is_required"],
+            ["label", "name", "is_required"],
             ["help_text"],
         )
 
@@ -69,25 +69,25 @@ class SimpleFieldInline(FormFieldInline):
         T = self.model.Type
         if self.model.TYPE in {T.TEXT, T.TEXTAREA}:
             return self.get_formfield_fieldsets(
-                ["label", "key", "is_required"],
+                ["label", "name", "is_required"],
                 ["help_text", "placeholder", "default_value", "max_length"],
             )
 
         elif self.model.TYPE in {T.EMAIL, T.URL, T.DATE, T.INTEGER}:
             return self.get_formfield_fieldsets(
-                ["label", "key", "is_required"],
+                ["label", "name", "is_required"],
                 ["help_text", "placeholder", "default_value"],
             )
 
         elif self.model.TYPE in {T.CHECKBOX}:
             return self.get_formfield_fieldsets(
-                ["label", "key", "is_required"],
+                ["label", "name", "is_required"],
                 ["help_text", "default_value"],
             )
 
         elif self.model.TYPE in {T.SELECT, T.RADIO}:
             return self.get_formfield_fieldsets(
-                ["label", "key", "is_required", "choices"],
+                ["label", "name", "is_required", "choices"],
                 ["help_text", "default_value"],
             )
 

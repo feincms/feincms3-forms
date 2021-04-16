@@ -11,10 +11,10 @@ from feincms3_forms.validation import Error, concrete_descendant_instances
 
 def validate_contact_form(form):
     instances = concrete_descendant_instances(ConfiguredFormPlugin)
-    keys = set(field.key for field in chain.from_iterable(instances.values()))
+    names = set(field.name for field in chain.from_iterable(instances.values()))
 
-    if "email" not in keys:
-        yield Error(_('"email" key is missing'))
+    if "email" not in names:
+        yield Error(_('Field with a name of "email" is missing.'))
 
 
 def process_contact_form(request, form):

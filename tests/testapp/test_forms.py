@@ -17,7 +17,7 @@ class FormsTest(test.TestCase):
             region="form",
             ordering=10,
             label="Full name",
-            key="full_name",
+            name="full_name",
         )
         PlainText.objects.create(
             parent=cf,
@@ -49,14 +49,16 @@ class FormsTest(test.TestCase):
         # print(response, response.content.decode("utf-8"))
 
         self.assertContains(response, " has been validated.")
-        self.assertContains(response, "&quot;email&quot; key is missing")
+        self.assertContains(
+            response, "Field with a name of &quot;email&quot; is missing"
+        )
 
         Email.objects.create(
             parent=cf,
             region="form",
             ordering=10,
             label="Email",
-            key="email",
+            name="email",
         )
         self.assertEqual(list(cf.type.validate(cf)), [])
 
@@ -82,21 +84,21 @@ class FormsTest(test.TestCase):
             "region": "form",
             "ordering": 10,
             "label": "label",
-            "key": "key",
+            "name": "name",
             "type": "select",
         }
 
         item = Select(choices="a\nb", default_value="", **kw)
         item.full_clean()  # Validates just fine
         self.assertEqual(
-            item.get_fields()["key"].choices,
+            item.get_fields()["name"].choices,
             [("", "---------"), ("a", "a"), ("b", "b")],
         )
 
         item.default_value = "b"
         item.full_clean()  # Validates just fine
         self.assertEqual(
-            item.get_fields()["key"].choices,
+            item.get_fields()["name"].choices,
             [("a", "a"), ("b", "b")],
         )
 
@@ -116,14 +118,14 @@ class FormsTest(test.TestCase):
 
         initial = {}
         self.assertEqual(
-            item.get_fields(initial=initial)["key"].choices,
+            item.get_fields(initial=initial)["name"].choices,
             [("a", "A"), ("b-is-fun", "B is fun")],
         )
-        self.assertNotIn("key", initial)
+        self.assertNotIn("name", initial)
 
         item.default_value = "B is fun"
         item.get_fields(initial=initial)
-        self.assertEqual(initial["key"], "b-is-fun")
+        self.assertEqual(initial["name"], "b-is-fun")
 
         item = Select(
             choices="KEY VALUE | pretty label\n OTHER VALUE | other pretty label \n\n",
@@ -132,7 +134,7 @@ class FormsTest(test.TestCase):
         )
         item.full_clean()  # Validates just fine
         self.assertEqual(
-            item.get_fields()["key"].choices,
+            item.get_fields()["name"].choices,
             [
                 ("KEY VALUE", "pretty label"),
                 ("OTHER VALUE", "other pretty label"),

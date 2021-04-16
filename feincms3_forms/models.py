@@ -69,9 +69,9 @@ class ConfiguredForm(models.Model):
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
 
 
-class KeyField(models.CharField):
+class NameField(models.CharField):
     def __init__(self, **kwargs):
-        kwargs.setdefault("verbose_name", _("key"))
+        kwargs.setdefault("verbose_name", _("name"))
         kwargs.setdefault("max_length", 50)
         kwargs.setdefault(
             "validators",
@@ -88,7 +88,7 @@ class KeyField(models.CharField):
         kwargs.setdefault(
             "help_text",
             _(
-                "Data is saved using this key. Changing it may result in data loss."
+                "Data is saved using this name. Changing it may result in data loss."
                 " This field only allows a-z, 0-9 and _ as characters."
             ),
         )
@@ -101,7 +101,7 @@ class KeyField(models.CharField):
 
 class FormField(models.Model):
     label = models.CharField(_("label"), max_length=1000)
-    key = KeyField()
+    name = NameField()
     is_required = models.BooleanField(_("is required"), default=True)
     help_text = models.CharField(
         _("help text"),
@@ -119,7 +119,7 @@ class FormField(models.Model):
         kwargs.setdefault("label", self.label)
         kwargs.setdefault("required", self.is_required)
         kwargs.setdefault("help_text", self.help_text)
-        return {self.key: form_class(**kwargs)}
+        return {self.name: form_class(**kwargs)}
 
 
 class SimpleFieldBase(FormField):
@@ -210,9 +210,9 @@ class SimpleFieldBase(FormField):
 
         if self.default_value and initial is not None:
             if self.choices:
-                initial.setdefault(self.key, slugify(self.default_value))
+                initial.setdefault(self.name, slugify(self.default_value))
             else:
-                initial.setdefault(self.key, self.default_value)
+                initial.setdefault(self.name, self.default_value)
 
         if self.type == T.TEXT:
             return super().get_fields(
