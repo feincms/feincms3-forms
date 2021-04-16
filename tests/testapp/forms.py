@@ -1,17 +1,14 @@
-from itertools import chain
-
 from django import forms
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.utils.translation import gettext_lazy as _
-from testapp.models import ConfiguredFormPlugin
+from testapp.views import renderer
 
-from feincms3_forms.validation import Error, concrete_descendant_instances
+from feincms3_forms.validation import Error
 
 
 def validate_contact_form(cf):
-    instances = concrete_descendant_instances(ConfiguredFormPlugin, cf)
-    names = set(field.name for field in chain.from_iterable(instances.values()))
+    names = list(cf.get_formfields_union(plugins=renderer.plugins()))
 
     if "email" not in names:
         yield Error(_('Field with a name of "email" is missing.'))

@@ -66,6 +66,20 @@ class ConfiguredForm(models.Model):
             types = {type.key: type for type in sender.FORMS}
             sender.type = property(lambda self: import_if_string(types[self.form]))
 
+    def get_formfields_union(self, *, plugins, values=["name"], flat=True):
+        qs = None
+        for plugin in plugins:
+            if not hasattr(plugin, "get_fields"):
+                continue
+            plugin_qs = plugin.objects.filter(parent=self).values_list(
+                *values, flat=flat
+            )
+            if qs is None:
+                qs = plugin_qs
+            else:
+                qs = qs.union(plugin_qs)
+        return qs
+
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
 

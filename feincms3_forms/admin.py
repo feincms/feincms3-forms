@@ -28,7 +28,7 @@ class ConfiguredFormAdmin(ContentEditor):
             obj_repr = str(obj)
 
         if type := obj.type:
-            if msgs := type.validate(obj):
+            if msgs := list(type.validate(obj)):
                 for msg in msgs:
                     msg.add_to(request)
                 messages.warning(
