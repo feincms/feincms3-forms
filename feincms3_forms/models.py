@@ -52,9 +52,10 @@ class ConfiguredForm(models.Model):
     @property
     def regions(self):
         try:
-            return self.type.regions
+            regions = self.type.regions
         except (AttributeError, KeyError):
             return []
+        return regions(self) if callable(regions) else regions
 
     @staticmethod
     def fill_form_choices(sender, **kwargs):
