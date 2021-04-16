@@ -1,6 +1,7 @@
 from content_editor.models import Type
 from django import forms
 from django.core import validators
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.db.models import signals
 from django.db.models.fields import BLANK_CHOICE_DASH
@@ -114,14 +115,11 @@ class FormField(models.Model):
     def __str__(self):
         return self.label
 
-    def get_fields(self, *, form_class, **kwargs):
-        return {
-            self.key: form_class(
-                label=self.label,
-                required=self.is_required,
-                help_text=self.help_text,
-            )
-        }
+    def get_fields(self, *, form_class, initial=None, **kwargs):
+        kwargs.setdefault("label", self.label)
+        kwargs.setdefault("required", self.is_required)
+        kwargs.setdefault("help_text", self.help_text)
+        return {self.key: form_class(**kwargs)}
 
 
 class SimpleFieldBase(FormField):
@@ -216,80 +214,78 @@ class SimpleFieldBase(FormField):
             else:
                 initial.setdefault(self.key, self.default_value)
 
-        field_kw = {
-            "label": self.label,
-            "required": self.is_required,
-            "help_text": self.help_text,
-        }
+        if self.type == T.TEXT:
+            return super().get_fields(
+                form_class=forms.CharField,
+                max_length=self.max_length,
+                widget=forms.CharField.widget(
+                    attrs={"placeholder": self.placeholder or False}
+                ),
+            )
 
-        if self.type == T.TEXTAREA:
-            return {
-                self.key: forms.CharField(
-                    max_length=self.max_length,
-                    widget=forms.Textarea(
-                        attrs={
-                            "maxlength": self.max_length or False,
-                            "placeholder": self.placeholder or False,
-                            "rows": 5,
-                        },
-                    ),
-                    **field_kw,
-                )
-            }
+        elif self.type == T.EMAIL:
+            return super().get_fields(
+                form_class=forms.EmailField,
+                widget=forms.EmailField.widget(
+                    attrs={"placeholder": self.placeholder or False}
+                ),
+            )
+
+        elif self.type == T.URL:
+            return super().get_fields(
+                form_class=forms.URLField,
+                widget=forms.URLField.widget(
+                    attrs={"placeholder": self.placeholder or False}
+                ),
+            )
 
         elif self.type == T.DATE:
-            return {
-                self.key: forms.DateField(
-                    widget=forms.DateInput(
-                        attrs={"placeholder": self.placeholder or False, "type": "date"}
-                    ),
-                    **field_kw,
-                )
-            }
-
-        elif self.type == T.RADIO:
-            return {
-                self.key: forms.ChoiceField(
-                    widget=forms.RadioSelect(), choices=self.get_choices(), **field_kw
+            return super().get_fields(
+                form_class=forms.DateField,
+                widget=forms.DateInput(
+                    attrs={"placeholder": self.placeholder or False, "type": "date"}
                 ),
-            }
+            )
+
+        elif self.type == T.INTEGER:
+            return super().get_fields(
+                form_class=forms.IntegerField,
+                widget=forms.IntegerField.widget(
+                    attrs={"placeholder": self.placeholder or False}
+                ),
+            )
+
+        elif self.type == T.TEXTAREA:
+            return super().get_fields(
+                form_class=forms.CharField,
+                max_length=self.max_length,
+                widget=forms.Textarea(
+                    attrs={
+                        "maxlength": self.max_length or False,
+                        "placeholder": self.placeholder or False,
+                        "rows": 5,
+                    },
+                ),
+            )
+
+        elif self.type == T.CHECKBOX:
+            return super().get_fields(form_class=forms.BooleanField)
 
         elif self.type == T.SELECT:
             choices = self.get_choices()
             if not self.is_required or not self.default_value:
                 choices = BLANK_CHOICE_DASH + choices
-            return {
-                self.key: forms.ChoiceField(choices=choices, **field_kw),
-            }
+            return super().get_fields(
+                form_class=forms.ChoiceField,
+                choices=choices,
+            )
 
-        elif self.type in {T.EMAIL, T.URL, T.INTEGER}:
-            field = {
-                T.EMAIL: forms.EmailField,
-                T.URL: forms.URLField,
-                T.INTEGER: forms.IntegerField,
-            }[self.type]
-            return {
-                self.key: field(
-                    widget=field.widget(
-                        attrs={"placeholder": self.placeholder or False}
-                    ),
-                    **field_kw,
-                ),
-            }
+        elif self.type == T.RADIO:
+            return super().get_fields(
+                form_class=forms.ChoiceField,
+                widget=forms.RadioSelect,
+                choices=self.get_choices(),
+            )
 
-        elif self.type == T.CHECKBOX:
-            return {
-                self.key: forms.BooleanField(**field_kw),
-            }
-
-        else:
-            field = forms.CharField
-            return {
-                self.key: field(
-                    max_length=self.max_length,
-                    widget=field.widget(
-                        attrs={"placeholder": self.placeholder or False}
-                    ),
-                    **field_kw,
-                ),
-            }
+        else:  # pragma: no cover
+            raise ImproperlyConfigured(f"Unknown type {self.model.TYPE}")
