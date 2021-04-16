@@ -28,9 +28,10 @@ class FormsTest(test.TestCase):
 
         response = self.client.get("/")
         prefix = response.context["form"].prefix
+        name = f"{prefix}-full_name"
         self.assertContains(
             response,
-            f'<input type="text" name="{prefix}-full_name" required>',
+            f'<input type="text" name="{name}" id="id_{name}" required>',
             1,
             html=True,
         )
@@ -144,9 +145,10 @@ class FormsTest(test.TestCase):
 
         response = self.client.get("/")
         prefix = response.context["form"].prefix
+        name = f"{prefix}-email"
         self.assertContains(
             response,
-            f'<input type="email" name="{prefix}-email" required>',
+            f'<input type="email" name="{name}" id="id_{name}" required>',
             1,
             html=True,
         )
@@ -161,9 +163,10 @@ class FormsTest(test.TestCase):
 
         response = self.client.get("/")
         prefix = response.context["form"].prefix
+        name = f"{prefix}-honeypot"
         self.assertContains(
             response,
-            f'<input type="hidden" name="{prefix}-honeypot">',
+            f'<input type="hidden" name="{name}" id="id_{name}">',
             html=True,
         )
 
