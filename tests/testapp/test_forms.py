@@ -36,6 +36,10 @@ class FormsTest(test.TestCase):
             html=True,
         )
 
+        response = self.client.post("/", {name: "test@example.org"})
+        self.assertRedirects(response, "/")
+        # print(response, response.content.decode("utf-8"))
+
     def test_admin(self):
         user = User.objects.create_superuser("admin", "admin@example.com", "password")
         self.client.force_login(user)

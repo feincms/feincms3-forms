@@ -51,7 +51,7 @@ def form(request):
     )
 
     if form.is_valid():
-        return cf.type.process(request, form)
+        return cf.type.process(request, form, configured_form=cf)
 
     context["form"] = form
     context["form_other_fields"] = form.get_form_fields(None)
