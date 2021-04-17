@@ -28,7 +28,7 @@ class FormType(Type):
 
     def __init__(self, **kwargs):
         kwargs.setdefault("form_class", forms.Form)
-        kwargs.setdefault("validate", lambda form: [])
+        kwargs.setdefault("validate", lambda configured_form: [])
         super().__init__(**kwargs)
 
     form_class = ImportDescriptor()
