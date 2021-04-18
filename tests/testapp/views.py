@@ -41,7 +41,7 @@ def form(request):
 
     form_kwargs = {"prefix": short_prefix(cf, "form")}
     if request.method == "POST":
-        form_kwargs.update({"data": request.POST, "files": request.FILES})
+        form_kwargs |= {"data": request.POST, "files": request.FILES}
 
     form = create_form(
         contents["form"],
