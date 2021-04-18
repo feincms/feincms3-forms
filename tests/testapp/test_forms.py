@@ -118,16 +118,14 @@ class FormsTest(test.TestCase):
         item = Select(choices="A\nB is fun", default_value="", **kw)
         item.full_clean()  # Validates just fine
 
-        initial = {}
         self.assertEqual(
-            item.get_fields(initial=initial)["name"].choices,
+            item.get_fields()["name"].choices,
             [("a", "A"), ("b-is-fun", "B is fun")],
         )
-        self.assertNotIn("name", initial)
+        self.assertNotIn("name", item.get_initial())
 
         item.default_value = "B is fun"
-        item.get_fields(initial=initial)
-        self.assertEqual(initial["name"], "b-is-fun")
+        self.assertEqual(item.get_initial(), {"name": "b-is-fun"})
 
         item = Select(
             choices="KEY VALUE | pretty label\n OTHER VALUE | other pretty label \n\n",

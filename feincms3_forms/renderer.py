@@ -15,15 +15,16 @@ class FormMixin:
 
 
 def create_form(items, *, context, form_class=forms.Form, form_kwargs):
-    initial = form_kwargs.setdefault("initial", {})
-
     item_fields = {
-        item: item.get_fields(initial=initial)
-        for item in items
-        if hasattr(item, "get_fields")
+        item: item.get_fields() for item in items if hasattr(item, "get_fields")
     }
     all_fields = reduce(lambda a, b: {**a, **b}, item_fields.values(), {})
     all_names = set(all_fields)
+
+    initial = form_kwargs.setdefault("initial", {})
+    for item in items:
+        if hasattr(item, "get_initial") and (item_initial := item.get_initial()):
+            initial = {**item_initial, **initial}
 
     form = type("Form", (FormMixin, form_class), all_fields)(**form_kwargs)
     form._f3f_item_fields = {

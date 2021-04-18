@@ -130,7 +130,7 @@ class FormField(models.Model):
     def __str__(self):
         return self.label
 
-    def get_fields(self, *, form_class, initial=None, **kwargs):
+    def get_fields(self, *, form_class, **kwargs):
         kwargs.setdefault("label", self.label)
         kwargs.setdefault("required", self.is_required)
         kwargs.setdefault("help_text", self.help_text)
@@ -229,14 +229,15 @@ class SimpleFieldBase(FormField):
 
         return [_choice(value) for value in self.choices.splitlines() if value]
 
-    def get_fields(self, *, initial=None, **kwargs):
-        T = self.Type
+    def get_initial(self):
+        if not self.default_value:
+            return {}
+        if self.choices:
+            return {self.name: slugify(self.default_value)}
+        return {self.name: self.default_value}
 
-        if self.default_value and initial is not None:
-            if self.choices:
-                initial.setdefault(self.name, slugify(self.default_value))
-            else:
-                initial.setdefault(self.name, self.default_value)
+    def get_fields(self, **kwargs):
+        T = self.Type
 
         if self.type == T.TEXT:
             return super().get_fields(
