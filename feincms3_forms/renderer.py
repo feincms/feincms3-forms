@@ -22,11 +22,10 @@ def create_form(items, *, form_class=forms.Form, form_kwargs):
     all_fields = reduce(or_, item_fields.values(), {})
     all_names = set(all_fields)
 
-    initial = form_kwargs.get("initial", {})
-    for item in items:
-        if hasattr(item, "get_initial") and (item_initial := item.get_initial()):
-            initial = item_initial | initial
-    form_kwargs["initial"] = initial
+    initial = reduce(
+        or_, (item.get_initial() for item in items if hasattr(item, "get_initial")), {}
+    )
+    form_kwargs["initial"] = initial | form_kwargs.get("initial", {})
 
     form = type("Form", (FormMixin, form_class), all_fields)(**form_kwargs)
     form._f3f_item_fields = {
