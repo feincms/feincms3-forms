@@ -2,6 +2,8 @@ from django import test
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
+from feincms3_forms.renderer import create_form
+
 from .models import ConfiguredForm, Email, Honeypot, PlainText, Select, Text
 
 
@@ -175,3 +177,32 @@ class FormsTest(test.TestCase):
         response = self.client.post("/", {f"{prefix}-honeypot": "anything"})
         self.assertContains(response, "Invalid honeypot value")
         # print(response, response.content.decode("utf-8"))
+
+    def test_initial(self):
+        """Default values work and can be overridden from the outside"""
+        cf = ConfiguredForm.objects.create(name="Test", form="contact")
+        item = Text.objects.create(
+            parent=cf,
+            region="form",
+            ordering=10,
+            label="Full name",
+            name="full_name",
+            default_value="Hans",
+        )
+
+        form = create_form(
+            [item],
+            form_kwargs={"auto_id": ""},
+        )
+        self.assertHTMLEqual(
+            str(form["full_name"]),
+            '<input type="text" name="full_name" value="Hans" required>',
+        )
+
+        form = create_form(
+            [item], form_kwargs={"auto_id": "", "initial": {"full_name": "Franz"}}
+        )
+        self.assertHTMLEqual(
+            str(form["full_name"]),
+            '<input type="text" name="full_name" value="Franz" required>',
+        )
