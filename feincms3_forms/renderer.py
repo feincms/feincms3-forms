@@ -14,7 +14,7 @@ class FormMixin:
         return self._f3f_item_fields[item]
 
 
-def create_form(items, *, context, form_class=forms.Form, form_kwargs):
+def create_form(items, *, form_class=forms.Form, form_kwargs):
     item_fields = {
         item: item.get_fields() for item in items if hasattr(item, "get_fields")
     }
