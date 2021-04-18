@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 from feincms3_forms.renderer import create_form
-from feincms3_forms.reporting import get_loaders
+from feincms3_forms.reporting import get_loaders, value_default
+from feincms3_forms.validation import Warning
 
 from .models import ConfiguredForm, Email, Honeypot, Log, PlainText, Select, Text
 
@@ -50,6 +51,16 @@ class FormsTest(test.TestCase):
             values,
             [{"label": "Full name", "name": "full_name", "value": "test@example.org"}],
         )
+        values = [loader({}) for loader in loaders]
+        self.assertEqual(
+            values,
+            [{"label": "Full name", "name": "full_name", "value": None}],
+        )
+        values = [value_default(loader({})) for loader in loaders]
+        self.assertEqual(
+            values,
+            [{"label": "Full name", "name": "full_name", "value": "Ø"}],
+        )
 
     def test_admin(self):
         user = User.objects.create_superuser("admin", "admin@example.com", "password")
@@ -74,6 +85,18 @@ class FormsTest(test.TestCase):
             name="email",
         )
         self.assertEqual(list(cf.type.validate(cf)), [])
+
+        Email.objects.create(
+            parent=cf,
+            region="form",
+            ordering=20,
+            label="Email",
+            name="email",
+        )
+        self.assertEqual(
+            list(cf.type.validate(cf)),
+            [Warning("Fields exist more than once: email (2)")],
+        )
 
         cf = ConfiguredForm.objects.create(name="Test", form="other-fields")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")

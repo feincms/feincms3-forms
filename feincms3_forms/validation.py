@@ -12,6 +12,16 @@ class Message:
     def __str__(self):
         return str(self.message)
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: message={self.message!r}>"
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__)
+            and self.level == other.level
+            and self.message == other.message
+        )
+
     def add_to(self, request):
         api.add_message(request, self.level, self.message)
 
