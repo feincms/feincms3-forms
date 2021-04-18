@@ -66,7 +66,7 @@ class ConfiguredForm(models.Model):
             field.choices = [(row["key"], row["label"]) for row in sender.FORMS]
 
             types = {type.key: type for type in sender.FORMS}
-            sender.type = property(lambda self: import_if_string(types[self.form]))
+            sender.type = property(lambda self: import_if_string(types.get(self.form)))
 
     def get_formfields_union(self, *, plugins, values=["name"]):
         qs = None

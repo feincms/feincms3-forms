@@ -80,6 +80,10 @@ class FormsTest(test.TestCase):
         self.assertContains(response, " has been validated.")
         self.assertContains(response, "Listen to the radio")
 
+        cf = ConfiguredForm.objects.create(name="Test", form="--notexists--")
+        response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
+        self.assertContains(response, "seems to have an invalid type")
+
     def test_form_without_items(self):
         ConfiguredForm.objects.create(name="Test", form="contact")
         response = self.client.get("/")
