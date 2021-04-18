@@ -1,3 +1,5 @@
+from functools import partial
+
 from content_editor.models import Type
 from django import forms
 from django.core import validators
@@ -137,13 +139,11 @@ class FormField(models.Model):
         return {self.name: form_class(**kwargs)}
 
     def get_loaders(self):
-        return [
-            lambda data: {
-                "label": self.label,
-                "name": self.name,
-                "value": data.get(self.name),
-            }
-        ]
+        return [partial(simple_loader, label=self.label, name=self.name)]
+
+
+def simple_loader(data, *, label, name):
+    return {"label": label, "name": name, "value": data.get(name)}
 
 
 class SimpleFieldBase(FormField):
