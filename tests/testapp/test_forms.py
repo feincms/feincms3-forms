@@ -3,8 +3,9 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 from feincms3_forms.renderer import create_form
+from feincms3_forms.reporting import get_loaders
 
-from .models import ConfiguredForm, Email, Honeypot, PlainText, Select, Text
+from .models import ConfiguredForm, Email, Honeypot, Log, PlainText, Select, Text
 
 
 # from django.test.utils import override_settings
@@ -14,14 +15,14 @@ from .models import ConfiguredForm, Email, Honeypot, PlainText, Select, Text
 class FormsTest(test.TestCase):
     def test_stuff(self):
         cf = ConfiguredForm.objects.create(name="Test", form="contact")
-        Text.objects.create(
+        item1 = Text.objects.create(
             parent=cf,
             region="form",
             ordering=10,
             label="Full name",
             name="full_name",
         )
-        PlainText.objects.create(
+        item2 = PlainText.objects.create(
             parent=cf,
             region="form",
             ordering=20,
@@ -41,6 +42,14 @@ class FormsTest(test.TestCase):
         response = self.client.post("/", {name: "test@example.org"})
         self.assertRedirects(response, "/")
         # print(response, response.content.decode("utf-8"))
+
+        log = Log.objects.get()
+        loaders = get_loaders([item1, item2])
+        values = [loader(log.data) for loader in loaders]
+        self.assertEqual(
+            values,
+            [{"label": "Full name", "name": "full_name", "value": "test@example.org"}],
+        )
 
     def test_admin(self):
         user = User.objects.create_superuser("admin", "admin@example.com", "password")

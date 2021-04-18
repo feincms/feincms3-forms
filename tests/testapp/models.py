@@ -95,3 +95,8 @@ class HoneypotField(forms.CharField):
 class Honeypot(ConfiguredFormPlugin):
     def get_fields(self, **kwargs):
         return {"honeypot": HoneypotField()}
+
+
+class Log(models.Model):
+    configured_form = models.ForeignKey(ConfiguredForm, on_delete=models.CASCADE)
+    data = models.JSONField()

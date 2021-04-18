@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.utils.translation import gettext_lazy as _
+from testapp.models import Log
 from testapp.views import renderer
 
 from feincms3_forms.validation import validate_required_fields, validate_uniqueness
@@ -18,6 +19,7 @@ def validate_contact_form(configured_form):
 def process_contact_form(request, form, *, configured_form):
     print("Sending mail to", form.cleaned_data)
     messages.success(request, _("Successfully sent the mail (not really!)"))
+    Log.objects.create(configured_form=configured_form, data=form.cleaned_data)
     return HttpResponseRedirect(".")
 
 
