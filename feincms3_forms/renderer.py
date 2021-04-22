@@ -5,9 +5,9 @@ from operator import or_
 from django import forms
 
 
-def short_prefix(obj, postfix=""):
-    identifier = f"{obj._meta.label}:{obj.pk}:{postfix}"
-    return sha1(identifier.encode("utf-8")).hexdigest()[:6]
+def short_prefix(obj, part=""):
+    identifier = f"{obj._meta.label}:{obj.pk}:{part}".encode("utf-8")
+    return "form-" + sha1(identifier).hexdigest()[:5]
 
 
 class FormMixin:
