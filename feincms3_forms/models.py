@@ -79,7 +79,7 @@ class ConfiguredForm(models.Model):
             if qs is None:
                 qs = plugin_qs
             else:
-                qs = qs.union(plugin_qs)
+                qs = qs.union(plugin_qs, all=True)
         return qs
 
 
