@@ -15,7 +15,7 @@ from .models import ConfiguredForm, Email, Honeypot, Log, PlainText, Select, Tex
 
 class FormsTest(test.TestCase):
     def test_stuff(self):
-        cf = ConfiguredForm.objects.create(name="Test", form="contact")
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
         item1 = Text.objects.create(
             parent=cf,
             region="form",
@@ -66,7 +66,7 @@ class FormsTest(test.TestCase):
         user = User.objects.create_superuser("admin", "admin@example.com", "password")
         self.client.force_login(user)
 
-        cf = ConfiguredForm.objects.create(name="Test", form="contact")
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
 
         self.assertContains(response, "&quot;testapp_simplefield_set&quot;")
@@ -98,17 +98,17 @@ class FormsTest(test.TestCase):
             [Warning("Fields exist more than once: email (2)")],
         )
 
-        cf = ConfiguredForm.objects.create(name="Test", form="other-fields")
+        cf = ConfiguredForm.objects.create(name="Test", form_type="other-fields")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
         self.assertContains(response, " has been validated.")
         self.assertContains(response, "Listen to the radio")
 
-        cf = ConfiguredForm.objects.create(name="Test", form="--notexists--")
+        cf = ConfiguredForm.objects.create(name="Test", form_type="--notexists--")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
         self.assertContains(response, "seems to have an invalid type")
 
     def test_form_without_items(self):
-        ConfiguredForm.objects.create(name="Test", form="contact")
+        ConfiguredForm.objects.create(name="Test", form_type="contact")
         response = self.client.get("/")
         prefix = response.context["form"].prefix
         self.assertTrue(bool(prefix))
@@ -180,7 +180,7 @@ class FormsTest(test.TestCase):
         )
 
     def test_other_fields(self):
-        cf = ConfiguredForm.objects.create(name="Test", form="other-fields")
+        cf = ConfiguredForm.objects.create(name="Test", form_type="other-fields")
         self.assertEqual(cf.regions, [])
 
         response = self.client.get("/")
@@ -194,7 +194,7 @@ class FormsTest(test.TestCase):
         )
 
     def test_honeypot(self):
-        cf = ConfiguredForm.objects.create(name="Test", form="contact")
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
         Honeypot.objects.create(
             parent=cf,
             region="form",
@@ -216,7 +216,7 @@ class FormsTest(test.TestCase):
 
     def test_initial(self):
         """Default values work and can be overridden from the outside"""
-        cf = ConfiguredForm.objects.create(name="Test", form="contact")
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
         item = Text.objects.create(
             parent=cf,
             region="form",

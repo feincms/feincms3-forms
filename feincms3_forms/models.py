@@ -34,7 +34,7 @@ class FormType(Type):
 
 class ConfiguredForm(models.Model):
     name = models.CharField(_("name"), max_length=1000)
-    form = ChoicesCharField(_("form"), max_length=100)
+    form_type = ChoicesCharField(_("form type"), max_length=100)
 
     class Meta:
         abstract = True
@@ -56,11 +56,11 @@ class ConfiguredForm(models.Model):
     @staticmethod
     def fill_form_choices(sender, **kwargs):
         if issubclass(sender, ConfiguredForm) and not sender._meta.abstract:
-            field = sender._meta.get_field("form")
+            field = sender._meta.get_field("form_type")
             field.choices = [(row["key"], row["label"]) for row in sender.FORMS]
 
             types = {type.key: type for type in sender.FORMS}
-            sender.type = property(lambda self: types.get(self.form))
+            sender.type = property(lambda self: types.get(self.form_type))
 
     def get_formfields_union(self, *, plugins, values=["name"]):
         qs = None
