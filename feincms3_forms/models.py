@@ -8,6 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.db.models import signals
 from django.db.models.fields import BLANK_CHOICE_DASH
+from django.template.defaultfilters import truncatechars
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -124,7 +125,7 @@ class FormField(models.Model):
         abstract = True
 
     def __str__(self):
-        return self.label
+        return truncatechars(self.label, 50)
 
     def get_fields(self, *, form_class, **kwargs):
         kwargs.setdefault("label", self.label)
