@@ -94,7 +94,7 @@ class HoneypotField(forms.CharField):
 
 class Honeypot(ConfiguredFormPlugin):
     def get_fields(self, **kwargs):
-        return {"honeypot": HoneypotField()}
+        return {"honeypot": HoneypotField(required=False)}
 
 
 class Log(models.Model):

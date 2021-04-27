@@ -2,6 +2,7 @@ from django import test
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
+from feincms3_forms.models import FormType
 from feincms3_forms.renderer import create_form
 from feincms3_forms.reporting import get_loaders, value_default
 from feincms3_forms.validation import Warning
@@ -212,7 +213,10 @@ class FormsTest(test.TestCase):
 
         response = self.client.post("/", {f"{prefix}-honeypot": "anything"})
         self.assertContains(response, "Invalid honeypot value")
+
+        response = self.client.post("/", {f"{prefix}-honeypot": ""})
         # print(response, response.content.decode("utf-8"))
+        self.assertRedirects(response, "/")
 
     def test_initial(self):
         """Default values work and can be overridden from the outside"""
@@ -242,3 +246,24 @@ class FormsTest(test.TestCase):
             str(form["full_name"]),
             '<input type="text" name="full_name" value="Franz" required>',
         )
+
+    def test_formtype_getattr(self):
+        ft = FormType(
+            key="required",
+            label="required",
+            regions="required",
+            form_class="required",
+            validate="required",
+            #
+            int=42,
+            module="django.test",
+            nothing="no.thing",
+        )
+
+        self.assertEqual(ft.int, 42)
+        self.assertEqual(ft.module, test)
+        self.assertEqual(ft.nothing, "no.thing")
+
+    def test_simplefield_str(self):
+        f = Text(label=" ".join("abc" for _ in range(100)))
+        self.assertEqual(str(f), "abc abc abc abc abc abc abc abc abc abc abc abc a…")
