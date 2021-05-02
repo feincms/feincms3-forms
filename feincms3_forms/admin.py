@@ -3,7 +3,6 @@ from urllib.parse import quote as urlquote
 from content_editor.admin import ContentEditor, ContentEditorInline
 from django.contrib import messages
 from django.contrib.admin.utils import quote
-from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
@@ -68,48 +67,41 @@ class ConfiguredFormAdmin(ContentEditor):
 
 
 class FormFieldInline(ContentEditorInline):
-    def get_formfield_fieldsets(self, core, advanced):
-        return [
-            (None, {"fields": core + ["ordering", "region"]}),
-            (_("Advanced"), {"fields": advanced, "classes": ["collapse"]}),
-        ]
+    core_fields = ["label", "name", "is_required"]
+    advanced_fields = ["help_text"]
 
     def get_fieldsets(self, request, obj=None):
-        return self.get_formfield_fieldsets(
-            ["label", "name", "is_required"],
-            ["help_text"],
-        )
+        return [
+            (None, {"fields": self.core_fields + ["ordering", "region"]}),
+            (_("Advanced"), {"fields": self.advanced_fields, "classes": ["collapse"]}),
+        ]
 
 
 class SimpleFieldInline(FormFieldInline):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(type=self.model.TYPE)
 
-    def get_fieldsets(self, request, obj=None):
-        T = self.model.Type
-        if self.model.TYPE in {T.TEXT, T.TEXTAREA}:
-            return self.get_formfield_fieldsets(
-                ["label", "name", "is_required"],
+    @classmethod
+    def create(cls, model, **kwargs):
+        T = model.Type
+        if model.TYPE in {T.TEXT, T.TEXTAREA}:
+            kwargs.setdefault(
+                "advanced_fields",
                 ["help_text", "placeholder", "default_value", "max_length"],
             )
 
-        elif self.model.TYPE in {T.EMAIL, T.URL, T.DATE, T.INTEGER}:
-            return self.get_formfield_fieldsets(
-                ["label", "name", "is_required"],
-                ["help_text", "placeholder", "default_value"],
+        elif model.TYPE in {T.EMAIL, T.URL, T.DATE, T.INTEGER}:
+            kwargs.setdefault(
+                "advanced_fields", ["help_text", "placeholder", "default_value"]
             )
 
-        elif self.model.TYPE in {T.CHECKBOX}:
-            return self.get_formfield_fieldsets(
-                ["label", "name", "is_required"],
-                ["help_text", "default_value"],
-            )
+        elif model.TYPE in {T.CHECKBOX}:
+            kwargs.setdefault("advanced_fields", ["help_text", "default_value"])
 
-        elif self.model.TYPE in {T.SELECT, T.RADIO}:
-            return self.get_formfield_fieldsets(
-                ["label", "name", "is_required", "choices"],
-                ["help_text", "default_value"],
+        elif model.TYPE in {T.SELECT, T.RADIO}:
+            kwargs.setdefault(
+                "core_fields", ["label", "name", "is_required", "choices"]
             )
+            kwargs.setdefault("advanced_fields", ["help_text", "default_value"])
 
-        else:  # pragma: no cover
-            raise ImproperlyConfigured(f"Unknown type {self.model.TYPE}")
+        return super().create(model, **kwargs)
