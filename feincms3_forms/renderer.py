@@ -6,7 +6,7 @@ from django import forms
 
 
 def short_prefix(obj, part=""):
-    identifier = f"{obj._meta.label}:{obj.pk}:{part}".encode("utf-8")
+    identifier = f"{obj._meta.label}:{obj.pk}:{part}".encode()
     return "form-" + sha1(identifier).hexdigest()[:5]
 
 

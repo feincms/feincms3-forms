@@ -17,7 +17,7 @@ class ConfiguredFormAdmin(ContentEditor):
     def validate_configured_form(self, request, obj):
         opts = obj._meta
         obj_url = reverse(
-            "admin:%s_%s_change" % (opts.app_label, opts.model_name),
+            f"admin:{opts.app_label}_{opts.model_name}_change",
             args=(quote(obj.pk),),
             current_app=self.admin_site.name,
         )
