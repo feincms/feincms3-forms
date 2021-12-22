@@ -55,6 +55,8 @@ class ConfiguredFormAdmin(ContentEditor):
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change=change)
+        # Only validate if navigating away from this page. Otherwise validation
+        # will happen in render_change_form anyway.
         if request.method == "POST" and any(
             key in request.POST for key in NO_CONTINUE_PARAMETERS
         ):

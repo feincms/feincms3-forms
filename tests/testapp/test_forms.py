@@ -1,5 +1,6 @@
 from django import test
 from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
 from django.core.exceptions import ValidationError
 
 from feincms3_forms.models import FormType
@@ -12,6 +13,10 @@ from .models import ConfiguredForm, Email, Honeypot, Log, PlainText, Select, Tex
 
 # from django.test.utils import override_settings
 # from django.utils.functional import lazy
+
+
+def messages(response):
+    return [m.message for m in get_messages(response.wsgi_request)]
 
 
 class FormsTest(test.TestCase):
@@ -63,7 +68,7 @@ class FormsTest(test.TestCase):
             [{"label": "Full name", "name": "full_name", "value": "Ø"}],
         )
 
-    def test_admin(self):
+    def test_admin_validation_messages(self):
         user = User.objects.create_superuser("admin", "admin@example.com", "password")
         self.client.force_login(user)
 
@@ -99,10 +104,55 @@ class FormsTest(test.TestCase):
             [Warning("Fields exist more than once: email (2)")],
         )
 
+        data = {
+            "name": cf.name,
+            "form_type": cf.form_type,
+            "testapp_duration_set-TOTAL_FORMS": 0,
+            "testapp_duration_set-INITIAL_FORMS": 0,
+            "testapp_plaintext_set-TOTAL_FORMS": 0,
+            "testapp_plaintext_set-INITIAL_FORMS": 0,
+            "testapp_simplefield_set-TOTAL_FORMS": 0,
+            "testapp_simplefield_set-INITIAL_FORMS": 0,
+        }
+        for i in range(0, 10):
+            data |= {
+                f"testapp_simplefield_set-{i}-TOTAL_FORMS": 0,
+                f"testapp_simplefield_set-{i}-INITIAL_FORMS": 0,
+            }
+        response = self.client.post(
+            f"/admin/testapp/configuredform/{cf.id}/change/",
+            data,
+            fetch_redirect_response=False,
+        )
+        m = messages(response)
+        self.assertEqual(len(m), 1)
+        self.assertTrue(m[0].endswith("was changed successfully."))
+        self.client.get("/admin/")  # Remove messages
+
+        data["_save"] = 1
+        response = self.client.post(
+            f"/admin/testapp/configuredform/{cf.id}/change/",
+            data,
+            fetch_redirect_response=False,
+        )
+        m = messages(response)
+        self.assertEqual(len(m), 3)
+        self.assertEqual(m[0], "Fields exist more than once: email (2)")
+        self.assertTrue(m[1].startswith('Validation of "<'))
+        self.assertTrue(m[2].endswith("was changed successfully."))
+
+    def test_simple_admin_validation(self):
+        user = User.objects.create_superuser("admin", "admin@example.com", "password")
+        self.client.force_login(user)
+
         cf = ConfiguredForm.objects.create(name="Test", form_type="other-fields")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
         self.assertContains(response, " has been validated.")
         self.assertContains(response, "Listen to the radio")
+
+    def test_invalid_type(self):
+        user = User.objects.create_superuser("admin", "admin@example.com", "password")
+        self.client.force_login(user)
 
         cf = ConfiguredForm.objects.create(name="Test", form_type="--notexists--")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
