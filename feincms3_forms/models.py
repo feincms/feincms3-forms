@@ -34,6 +34,8 @@ class FormType(Type):
 
 
 class NameField(models.CharField):
+    """Almost but not quite a slug field. We only allow snake_case_names."""
+
     def __init__(self, **kwargs):
         kwargs.setdefault("verbose_name", _("name"))
         kwargs.setdefault("max_length", 50)
@@ -73,6 +75,35 @@ class FormFieldBase(models.Model):
 
     class Meta:
         abstract = True
+
+    def get_fields(self, **kwargs):
+        """
+        Return a dictionary of form fields
+
+        The keys are form field names (prefixed by ``self.name``), the values
+        form field instances.
+        """
+        raise NotImplementedError(
+            f"{self._meta.label_lower} needs a get_fields implementation"
+        )
+
+    def get_initial(self):
+        """The default implementation returns no initial values"""
+        return {}
+
+    def get_loaders(self):
+        """
+        Return a list of loaders
+
+        Loaders are callables which receive the serialized form data and
+        return a dictionary of the following shape::
+
+            {"label": ..., "name": ..., "value": ...}
+
+        """
+        raise NotImplementedError(
+            f"{self._meta.label_lower} needs a get_loaders implementation"
+        )
 
 
 class ConfiguredForm(models.Model):

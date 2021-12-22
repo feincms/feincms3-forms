@@ -4,6 +4,8 @@ from operator import or_
 
 from django import forms
 
+from feincms3_forms.models import FormFieldBase
+
 
 def short_prefix(obj, part=""):
     identifier = f"{obj._meta.label}:{obj.pk}:{part}".encode()
@@ -17,13 +19,15 @@ class FormMixin:
 
 def create_form(items, *, form_class=forms.Form, form_kwargs):
     item_fields = {
-        item: item.get_fields() for item in items if hasattr(item, "get_fields")
+        item: item.get_fields() for item in items if isinstance(item, FormFieldBase)
     }
     all_fields = reduce(or_, item_fields.values(), {})
     all_names = set(all_fields)
 
     initial = reduce(
-        or_, (item.get_initial() for item in items if hasattr(item, "get_initial")), {}
+        or_,
+        (item.get_initial() for item in items if isinstance(item, FormFieldBase)),
+        {},
     )
     form_kwargs["initial"] = initial | form_kwargs.get("initial", {})
 
