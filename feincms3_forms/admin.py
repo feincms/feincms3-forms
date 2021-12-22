@@ -28,8 +28,6 @@ class ConfiguredFormAdmin(ContentEditor):
 
         if type := obj.type:
             if msgs := list(type.validate(obj)):
-                for msg in msgs:
-                    msg.add_to(request)
                 messages.warning(
                     request,
                     format_html(
@@ -37,6 +35,8 @@ class ConfiguredFormAdmin(ContentEditor):
                         obj=obj_repr,
                     ),
                 )
+                for msg in msgs:
+                    messages.add_message(request, msg.level, msg.message)
             else:
                 messages.success(
                     request, format_html(_('"{obj}" has been validated.'), obj=obj_repr)

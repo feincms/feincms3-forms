@@ -137,8 +137,8 @@ class FormsTest(test.TestCase):
         )
         m = messages(response)
         self.assertEqual(len(m), 3)
-        self.assertEqual(m[0], "Fields exist more than once: email (2)")
-        self.assertTrue(m[1].startswith('Validation of "<'))
+        self.assertTrue(m[0].startswith('Validation of "<'))
+        self.assertEqual(m[1], "Fields exist more than once: email (2)")
         self.assertTrue(m[2].endswith("was changed successfully."))
 
     def test_simple_admin_validation(self):

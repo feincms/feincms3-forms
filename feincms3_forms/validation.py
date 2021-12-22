@@ -1,6 +1,6 @@
 from collections import Counter
 
-from django.contrib.messages import api, constants
+from django.contrib.messages import constants
 from django.utils.translation import gettext as _
 
 
@@ -21,9 +21,6 @@ class Message:
             and self.level == other.level
             and self.message == other.message
         )
-
-    def add_to(self, request):
-        api.add_message(request, self.level, self.message)
 
 
 class Warning(Message):
