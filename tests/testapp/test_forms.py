@@ -196,10 +196,23 @@ class FormsTest(test.TestCase):
 
     def test_honeypot(self):
         cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
+        Text.objects.create(
+            parent=cf,
+            region="form",
+            ordering=10,
+            label="Subject",
+            name="subject",
+            is_required=False,
+        )
         Honeypot.objects.create(
             parent=cf,
             region="form",
             ordering=10,
+        )
+
+        self.assertCountEqual(
+            cf.get_formfields_union(plugins=[Text, Honeypot]),
+            ["subject", "honeypot"],
         )
 
         response = self.client.get("/")

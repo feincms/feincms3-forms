@@ -52,10 +52,9 @@ Select = SimpleField.proxy(SimpleField.Type.SELECT)
 Radio = SimpleField.proxy(SimpleField.Type.RADIO, verbose_name="Listen to the radio")
 
 
-class Duration(ConfiguredFormPlugin):
+class Duration(forms_models.FormFieldBase, ConfiguredFormPlugin):
     label_from = models.CharField(_("from label"), max_length=1000)
     label_until = models.CharField(_("until label"), max_length=1000)
-    name = forms_models.NameField()
 
     class Meta:
         verbose_name = _("duration")
@@ -87,7 +86,7 @@ class HoneypotField(forms.CharField):
             raise forms.ValidationError(f"Invalid honeypot value {repr(value)}")
 
 
-class Honeypot(ConfiguredFormPlugin):
+class Honeypot(forms_models.FormFieldBase, ConfiguredFormPlugin):
     name = forms_models.NameField(default="honeypot")
 
     class Meta:

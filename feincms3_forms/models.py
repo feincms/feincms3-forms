@@ -33,54 +33,6 @@ class FormType(Type):
         return value
 
 
-class ConfiguredForm(models.Model):
-    name = models.CharField(_("name"), max_length=1000)
-    form_type = ChoicesCharField(_("form type"), max_length=100)
-
-    class Meta:
-        abstract = True
-        ordering = ["name"]
-        verbose_name = _("configured form")
-        verbose_name_plural = _("configured form")
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def regions(self):
-        try:
-            regions = self.type.regions
-        except (AttributeError, KeyError):
-            return []
-        return regions(self) if callable(regions) else regions
-
-    @staticmethod
-    def fill_form_choices(sender, **kwargs):
-        if issubclass(sender, ConfiguredForm) and not sender._meta.abstract:
-            field = sender._meta.get_field("form_type")
-            field.choices = [(row["key"], row["label"]) for row in sender.FORMS]
-
-            types = {type.key: type for type in sender.FORMS}
-            sender.type = property(lambda self: types.get(self.form_type))
-
-    def get_formfields_union(self, *, plugins, values=["name"]):
-        qs = None
-        for plugin in plugins:
-            if not issubclass(plugin, FormField):
-                continue
-            plugin_qs = plugin.objects.filter(parent=self).values_list(
-                *values, flat=len(values) == 1
-            )
-            if qs is None:
-                qs = plugin_qs
-            else:
-                qs = qs.union(plugin_qs, all=True)
-        return qs
-
-
-signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
-
-
 class NameField(models.CharField):
     def __init__(self, **kwargs):
         kwargs.setdefault("verbose_name", _("name"))
@@ -111,9 +63,70 @@ class NameField(models.CharField):
         return name, "django.db.models.CharField", args, kwargs
 
 
-class FormField(models.Model):
-    label = models.CharField(_("label"), max_length=1000)
+class FormFieldBase(models.Model):
+    """
+    Form field plugins must inherit this model if using the
+    ``get_formfields_union`` helper for configured form validation.
+    """
+
     name = NameField()
+
+    class Meta:
+        abstract = True
+
+
+class ConfiguredForm(models.Model):
+    name = models.CharField(_("name"), max_length=1000)
+    form_type = ChoicesCharField(_("form type"), max_length=100)
+
+    class Meta:
+        abstract = True
+        ordering = ["name"]
+        verbose_name = _("configured form")
+        verbose_name_plural = _("configured form")
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def regions(self):
+        try:
+            regions = self.type.regions
+        except (AttributeError, KeyError):
+            return []
+        return regions(self) if callable(regions) else regions
+
+    @staticmethod
+    def fill_form_choices(sender, **kwargs):
+        if issubclass(sender, ConfiguredForm) and not sender._meta.abstract:
+            field = sender._meta.get_field("form_type")
+            field.choices = [(row["key"], row["label"]) for row in sender.FORMS]
+
+            types = {type.key: type for type in sender.FORMS}
+            sender.type = property(lambda self: types.get(self.form_type))
+
+    def get_formfields_union(
+        self, *, plugins, values=["name"], field_plugin_bases=(FormFieldBase,)
+    ):
+        qs = None
+        for plugin in plugins:
+            if not issubclass(plugin, field_plugin_bases):
+                continue
+            plugin_qs = plugin.objects.filter(parent=self).values_list(
+                *values, flat=len(values) == 1
+            )
+            if qs is None:
+                qs = plugin_qs
+            else:
+                qs = qs.union(plugin_qs, all=True)
+        return qs
+
+
+signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
+
+
+class FormField(FormFieldBase):
+    label = models.CharField(_("label"), max_length=1000)
     is_required = models.BooleanField(_("is required"), default=True)
     help_text = models.CharField(
         _("help text"),
