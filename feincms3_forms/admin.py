@@ -67,7 +67,7 @@ class ConfiguredFormAdmin(ContentEditor):
 
 
 class FormFieldInline(ContentEditorInline):
-    core_fields = ["label", "name", "is_required"]
+    core_fields = ["name", "label", "is_required"]
     advanced_fields = ["help_text"]
 
     def get_fieldsets(self, request, obj=None):
@@ -100,7 +100,7 @@ class SimpleFieldInline(FormFieldInline):
 
         elif model.TYPE in {T.SELECT, T.RADIO}:
             kwargs.setdefault(
-                "core_fields", ["label", "name", "is_required", "choices"]
+                "core_fields", ["name", "label", "is_required", "choices"]
             )
             kwargs.setdefault("advanced_fields", ["help_text", "default_value"])
 

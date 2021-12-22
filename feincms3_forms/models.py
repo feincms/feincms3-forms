@@ -98,7 +98,7 @@ class FormFieldBase(models.Model):
         Loaders are callables which receive the serialized form data and
         return a dictionary of the following shape::
 
-            {"label": ..., "name": ..., "value": ...}
+            {"name": ..., "label": ..., "value": ...}
 
         """
         raise NotImplementedError(
@@ -181,8 +181,8 @@ class FormField(FormFieldBase):
         return [partial(simple_loader, label=self.label, name=self.name)]
 
 
-def simple_loader(data, *, label, name):
-    return {"label": label, "name": name, "value": data.get(name)}
+def simple_loader(data, *, name, label):
+    return {"name": name, "label": label, "value": data.get(name)}
 
 
 class SimpleFieldBase(FormField):
