@@ -91,6 +91,14 @@ class FormFieldBase(models.Model):
         """The default implementation returns no initial values"""
         return {}
 
+    def get_cleaners(self):
+        """
+        Return a list of ``clean()`` hooks which receive the form instance,
+        return the cleaned data and may optionally raise ``ValidationError``
+        instances.
+        """
+        return []
+
     def get_loaders(self):
         """
         Return a list of loaders
