@@ -201,7 +201,10 @@ class SimpleFieldBase(FormField):
 
     choices = models.TextField(
         _("choices"),
-        help_text=_("Enter one choice per line."),
+        help_text=_(
+            "Enter one choice per line. You may optionally provide the"
+            " value and the label separated by a pipe symbol (|)."
+        ),
     )
     placeholder = models.CharField(
         _("placeholder"),

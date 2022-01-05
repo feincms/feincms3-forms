@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-25 13:16+0200\n"
+"POT-Creation-Date: 2022-01-05 16:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,40 +18,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:37
+#: admin.py:34
 #, python-brace-format
 msgid "Validation of \"{obj}\" wasn't completely successful."
 msgstr "Die Validierung von \"{obj}\" war nicht vollständig erfolgreich."
 
-#: admin.py:43
+#: admin.py:42
 #, python-brace-format
 msgid "\"{obj}\" has been validated."
 msgstr "\"{obj}\" wurde validiert."
 
-#: admin.py:50
+#: admin.py:49
 #, python-brace-format
 msgid ""
 "\"{obj}\" could not be validated because it seems to have an invalid type."
 msgstr ""
 "\"{obj}\" konnte nicht validiert werden, weil der Formulartyp ungültig ist."
 
-#: admin.py:74
+#: admin.py:78
 msgid "Advanced"
 msgstr "Fortgeschritten"
 
-#: models.py:36 models.py:85
+#: models.py:40 models.py:110
 msgid "name"
 msgstr "Name"
 
-#: models.py:37
-msgid "form type"
-msgstr "Formulartyp"
-
-#: models.py:42 models.py:43
-msgid "configured form"
-msgstr "Konfiguriertes Formular"
-
-#: models.py:93
+#: models.py:48
 msgid ""
 "Enter a value consisting only of lowercase letters, numbers and the "
 "underscore."
@@ -59,7 +51,7 @@ msgstr ""
 "Geben Sie einen Wert ein, welcher nur Kleinbuchstaben, Zahlen und "
 "Unterstriche enthält."
 
-#: models.py:102
+#: models.py:57
 msgid ""
 "Data is saved using this name. Changing it may result in data loss. This "
 "field only allows a-z, 0-9 and _ as characters."
@@ -67,83 +59,95 @@ msgstr ""
 "Die Daten werden mit diesem Namen gespeichert. Änderungen könnten "
 "Datenverlust zur Folge haben. Erlaubte Zeichen sind a-z, 0-9 und _."
 
-#: models.py:114
+#: models.py:111
+msgid "form type"
+msgstr "Formulartyp"
+
+#: models.py:116 models.py:117
+msgid "configured form"
+msgstr "Konfiguriertes Formular"
+
+#: models.py:160
 msgid "label"
 msgstr "Beschriftung"
 
-#: models.py:116
+#: models.py:161
 msgid "is required"
 msgstr "ist notwendig"
 
-#: models.py:118
+#: models.py:163
 msgid "help text"
 msgstr "Hilfstext"
 
-#: models.py:145
+#: models.py:190
 msgid "text field"
 msgstr "Textfeld"
 
-#: models.py:146
+#: models.py:191
 msgid "email address field"
 msgstr "E-Mail-Feld"
 
-#: models.py:147
+#: models.py:192
 msgid "URL field"
 msgstr "URL-Feld"
 
-#: models.py:148
+#: models.py:193
 msgid "date field"
 msgstr "Datumsfeld"
 
-#: models.py:149
+#: models.py:194
 msgid "integer field"
 msgstr "Ganzzahlfeld"
 
-#: models.py:150
+#: models.py:195
 msgid "multiline text field"
 msgstr "Mehrzeiliges Textfeld"
 
-#: models.py:151
+#: models.py:196
 msgid "checkbox field"
 msgstr "Checkbox-Feld"
 
-#: models.py:152
+#: models.py:197
 msgid "dropdown field"
 msgstr "Dropdown-Feld"
 
-#: models.py:153
+#: models.py:198
 msgid "radio input field"
 msgstr "Radioauswahl-Feld"
 
-#: models.py:155
+#: models.py:200
 msgid "type"
 msgstr "Typ"
 
-#: models.py:158
+#: models.py:203
 msgid "choices"
 msgstr "Auswahl"
 
-#: models.py:159
-msgid "Enter one choice per line."
-msgstr "Eine Auswahlmöglichkeit pro Zeile."
+#: models.py:205
+msgid ""
+"Enter one choice per line. You may optionally provide the value and the "
+"label separated by a pipe symbol (|)."
+msgstr ""
+"Eine Auswahlmöglichkeit pro Zeile. Optional kann der Wert und die "
+"Bezeichnung angegeben werden, separiert mit einem Pipe-Symbol (|)."
 
-#: models.py:162
+#: models.py:210
 msgid "placeholder"
 msgstr "Platzhalter"
 
-#: models.py:167
+#: models.py:215
 msgid "default value"
 msgstr "Standardwert"
 
-#: models.py:170
+#: models.py:218
 msgid "Optional default value of the field."
 msgstr "Optionaler vorgegebener Standardwert für das Feld."
 
-#: models.py:172
+#: models.py:220
 msgid "max length"
 msgstr "Maximale Länge"
 
-#: models.py:208
+#: models.py:256
 #, python-format
 msgid ""
 "The specified default value \"%(default)s\" isn't part of the available "
@@ -152,12 +156,12 @@ msgstr ""
 "Der angegebene Standardwert \"%(default)s\" ist nicht Teil der verfügbaren "
 "Werte."
 
-#: validation.py:44
+#: validation.py:41
 #, python-format
 msgid "Fields exist more than once: %s"
 msgstr "Felder existieren mehr als einmal: %s"
 
-#: validation.py:54
+#: validation.py:51
 #, python-format
 msgid "Required fields are missing: %s"
 msgstr "Notwendige Felder fehlen: %s"
