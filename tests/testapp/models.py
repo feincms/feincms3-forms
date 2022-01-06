@@ -1,3 +1,5 @@
+from functools import partial
+
 from content_editor.models import Region, create_plugin_base
 from django import forms
 from django.db import models
@@ -52,6 +54,14 @@ Select = SimpleField.proxy(SimpleField.Type.SELECT)
 Radio = SimpleField.proxy(SimpleField.Type.RADIO, verbose_name="Listen to the radio")
 
 
+def clean_duration(form, data, *, name):
+    from_name = f"{name}_from"
+    until_name = f"{name}_until"
+    if (f := data.get(from_name)) and (u := data.get(until_name)) and f > u:
+        form.add_error(until_name, "Until has to be later than from.")
+    return data
+
+
 class Duration(forms_models.FormFieldBase, ConfiguredFormPlugin):
     label_from = models.CharField(_("from label"), max_length=1000)
     label_until = models.CharField(_("until label"), max_length=1000)
@@ -75,6 +85,9 @@ class Duration(forms_models.FormFieldBase, ConfiguredFormPlugin):
                 widget=forms.DateInput(attrs={"type": "date"}),
             ),
         }
+
+    def get_cleaners(self):
+        return [partial(clean_duration, name=self.name)]
 
 
 class HoneypotField(forms.CharField):

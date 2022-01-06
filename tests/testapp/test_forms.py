@@ -8,7 +8,16 @@ from feincms3_forms.renderer import create_form
 from feincms3_forms.reporting import get_loaders, value_default
 from feincms3_forms.validation import Warning
 
-from .models import ConfiguredForm, Email, Honeypot, Log, PlainText, Select, Text
+from .models import (
+    ConfiguredForm,
+    Duration,
+    Email,
+    Honeypot,
+    Log,
+    PlainText,
+    Select,
+    Text,
+)
 
 
 # from django.test.utils import override_settings
@@ -330,3 +339,34 @@ class FormsTest(test.TestCase):
     def test_simplefield_str(self):
         f = Text(label=" ".join("abc" for _ in range(100)))
         self.assertEqual(str(f), "abc abc abc abc abc abc abc abc abc abc abc abc a…")
+
+    def test_cleaners(self):
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
+        Duration.objects.create(
+            parent=cf,
+            region="form",
+            name="duration",
+            ordering=10,
+            label_from="from",
+            label_until="until",
+        )
+
+        self.assertCountEqual(
+            cf.get_formfields_union(plugins=[Duration]),
+            ["duration"],
+        )
+
+        response = self.client.get("/")
+        prefix = response.context["form"].prefix
+        from_name = f"{prefix}-duration_from"
+        until_name = f"{prefix}-duration_until"
+
+        response = self.client.post(
+            "/",
+            {
+                from_name: "2022-01-06",
+                until_name: "2022-01-01",
+            },
+        )
+        # print(response, response.content.decode("utf-8"))
+        self.assertContains(response, "Until has to be later than from.")
