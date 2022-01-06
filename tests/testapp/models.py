@@ -2,6 +2,7 @@ from functools import partial
 
 from content_editor.models import Region, create_plugin_base
 from django import forms
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -111,4 +112,4 @@ class Honeypot(forms_models.FormFieldBase, ConfiguredFormPlugin):
 
 class Log(models.Model):
     configured_form = models.ForeignKey(ConfiguredForm, on_delete=models.CASCADE)
-    data = models.JSONField()
+    data = models.JSONField(encoder=DjangoJSONEncoder)

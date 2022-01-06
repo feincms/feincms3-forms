@@ -370,3 +370,12 @@ class FormsTest(test.TestCase):
         )
         # print(response, response.content.decode("utf-8"))
         self.assertContains(response, "Until has to be later than from.")
+
+        response = self.client.post(
+            "/",
+            {
+                from_name: "2022-01-06",
+                until_name: "2022-01-10",
+            },
+        )
+        self.assertRedirects(response, "/")
