@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models import signals
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.template.defaultfilters import truncatechars
+from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -127,7 +128,7 @@ class ConfiguredForm(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def regions(self):
         try:
             regions = self.type.regions
