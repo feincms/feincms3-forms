@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 from feincms3_forms.models import FormType
 from feincms3_forms.renderer import create_form
-from feincms3_forms.reporting import get_loaders, value_default
+from feincms3_forms.reporting import get_loaders, simple_report, value_default
 from feincms3_forms.validation import Warning
 
 from .models import (
@@ -75,6 +75,12 @@ class FormsTest(test.TestCase):
         self.assertEqual(
             values,
             [{"label": "Full name", "name": "full_name", "value": "Ø"}],
+        )
+
+        report = simple_report(contents=[item1, item2], data=log.data)
+        self.assertEqual(
+            report,
+            "<p><strong>Full name</strong> (full_name)</p> <p>test@example.org</p>",
         )
 
     def test_admin_validation_messages(self):
