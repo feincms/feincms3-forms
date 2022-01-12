@@ -379,3 +379,18 @@ class FormsTest(test.TestCase):
             },
         )
         self.assertRedirects(response, "/")
+
+    def test_automatic_name(self):
+        field = Text()._meta.get_field("name")
+
+        name = field.to_python("name")
+        self.assertEqual(name, "name")
+
+        name = field.to_python("")
+        self.assertTrue(name.startswith("field_"))
+
+        name = field.to_python(None)
+        self.assertTrue(name.startswith("field_"))
+
+        # Very improbable
+        self.assertNotEqual(field.to_python(""), field.to_python(""))

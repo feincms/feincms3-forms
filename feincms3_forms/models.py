@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models import signals
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.template.defaultfilters import truncatechars
+from django.utils.crypto import get_random_string
 from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
@@ -32,6 +33,9 @@ class FormType(Type):
             except ModuleNotFoundError:
                 pass
         return value
+
+
+RANDOM_STRING_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 
 class NameField(models.CharField):
@@ -64,6 +68,16 @@ class NameField(models.CharField):
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
         return name, "django.db.models.CharField", args, kwargs
+
+    def formfield(self, **kwargs):
+        kwargs.setdefault("required", False)
+        return super().formfield(**kwargs)
+
+    def to_python(self, value):
+        value = super().to_python(value)
+        if not value:
+            return f"field_{get_random_string(10, allowed_chars=RANDOM_STRING_CHARS)}"
+        return value
 
 
 class FormFieldBase(models.Model):
