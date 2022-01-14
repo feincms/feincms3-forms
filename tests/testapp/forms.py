@@ -17,7 +17,6 @@ def validate_contact_form(configured_form):
 
 
 def process_contact_form(request, form, *, configured_form):
-    print("Sending mail to", form.cleaned_data)
     messages.success(request, _("Successfully sent the mail (not really!)"))
     Log.objects.create(configured_form=configured_form, data=form.cleaned_data)
     return HttpResponseRedirect(".")
