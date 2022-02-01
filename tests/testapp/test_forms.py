@@ -80,7 +80,7 @@ class FormsTest(test.TestCase):
         report = simple_report(contents=[item1, item2], data=log.data)
         self.assertEqual(
             report,
-            "<p><strong>Full name</strong> (full_name)</p> <p>test@example.org</p>",
+            '<p><strong>Full name</strong> (full_name)</p> <p><a href="mailto:test@example.org">test@example.org</a></p>',
         )
 
     def test_admin_validation_messages(self):

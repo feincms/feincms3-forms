@@ -26,7 +26,7 @@ def simple_report(*, contents, data):
     return mark_safe(
         "<br>\n".join(
             format_html(
-                "<p><strong>{label}</strong> ({name})</p> <p>{value}</p>",
+                "<p><strong>{label}</strong> ({name})</p> <p>{pretty}</p>",
                 **_prettify(value_default(loader(data))),
             )
             for loader in loaders
