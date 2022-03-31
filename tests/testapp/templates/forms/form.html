@@ -1,11 +1,15 @@
-{% extends "base.html" %} {% load feincms3 i18n %} {% block content %}
+{% extends "base.html" %}
 
+{% load feincms3 i18n %}
+
+{% block content %}
 <div class="content">
   <form class="form" method="post">
-    {% csrf_token %} {{ form.errors }} {% render_region form_regions 'form' %}
+    {% csrf_token %}
+    {{ form.errors }}
+    {% render_region form_regions 'form' %}
     {% for field in form_other_fields.values %}{{ field }}{% endfor %}
     <button type="submit">Submit</button>
   </form>
 </div>
-
 {% endblock content %}

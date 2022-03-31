@@ -36,3 +36,4 @@ repos:
     hooks:
       - id: prettier
         args: [--list-different, --no-semi]
+        exclude: "^conf/|.*\\.html$"
