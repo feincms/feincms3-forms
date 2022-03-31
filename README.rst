@@ -135,7 +135,7 @@ Add the renderer and the view (``app.forms.views``):
 
         context["form"] = form
         context["form_other_fields"] = form.get_form_fields(None)
-        context["form_regions"] = Regions.from_contents(contents, renderer=renderer)
+        context["form_regions"] = renderer.regions_from_contents(contents)
 
         return render(request, "forms/form.html", context)
 
