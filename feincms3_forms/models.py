@@ -160,9 +160,10 @@ class ConfiguredForm(models.Model):
             sender.type = property(lambda self: types.get(self.form_type))
 
     def get_formfields_union(
-        self, *, plugins, values=["name"], field_plugin_bases=(FormFieldBase,)
+        self, *, plugins, values=None, field_plugin_bases=(FormFieldBase,)
     ):
         qs = None
+        values = ["name"] if values is None else values
         for plugin in plugins:
             if not issubclass(plugin, field_plugin_bases):
                 continue
