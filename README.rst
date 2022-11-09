@@ -148,7 +148,8 @@ Add the renderer and the view (``app.forms.views``):
 
         return render(request, "forms/form.html", context)
 
-The simple field template might look as follows in this example:
+The ``forms/simple-field.html`` template referenced above might look as
+follows:
 
 .. code-block:: html+django
 
