@@ -56,8 +56,17 @@ Create a module containing the models for the form builder (``app.forms.models``
                 key="contact",
                 label="contact form",
                 regions=[Region(key="form", title="form")],
+
+                # Base class for the dynamically created form:
                 # form_class="...",
+
+                # Validation hook for configured form (the bundled ModelAdmin
+                # class calls this):
                 # validate="...",
+
+                # Processing function which you can call after submission
+                # (feincms3-forms never calls this function itself, but it
+                # may be a nice convention):
                 process="app.forms.forms.process_contact_form",
             ),
         ]
