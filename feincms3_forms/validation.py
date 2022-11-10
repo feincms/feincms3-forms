@@ -51,3 +51,25 @@ def validate_required_fields(fields, required):
             Error(_("Required fields are missing: %s") % ", ".join(sorted(missing)))
         ]
     return []
+
+
+def validate_types(field_types, types):
+    errors = []
+    for field, type in types.items():
+        if field not in field_types:
+            errors.append(
+                Warning(
+                    _("Field {field} with expected type {type} doesn't exist").format(
+                        field=field, type=type
+                    )
+                )
+            )
+        elif field_types[field] != type:
+            errors.append(
+                Error(
+                    _("Field {field} doesn't have expected type {type}").format(
+                        field=field, type=type
+                    )
+                )
+            )
+    return errors

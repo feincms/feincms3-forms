@@ -9,9 +9,6 @@ Change log
 
 - Changed ``ConfiguredForm.get_formfields_union`` to allow fetching arbitrary
   attributes from plugins.
-- Added a ``TYPE`` classproperty to ``FormFieldBase`` which returns the
-  lowercased class name. This mirrors the ``TYPE`` attribute already existing
-  on ``SimpleFieldBase`` proxies.
 
 
 `0.1`_ (2022-11-10)

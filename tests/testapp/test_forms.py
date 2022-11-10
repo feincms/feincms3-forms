@@ -1,5 +1,3 @@
-from unittest import expectedFailure
-
 from content_editor.contents import contents_for_item
 from django import test
 from django.contrib.auth.models import User
@@ -10,7 +8,7 @@ from django.test.utils import isolate_apps
 from feincms3_forms.models import FormFieldBase, FormType
 from feincms3_forms.renderer import create_form
 from feincms3_forms.reporting import get_loaders, simple_report, value_default
-from feincms3_forms.validation import Warning
+from feincms3_forms.validation import Error, Warning
 
 from .models import (
     URL,
@@ -449,7 +447,7 @@ class FormsTest(test.TestCase):
             dict(
                 cf.get_formfields_union(
                     plugins=[Text, PlainText, Honeypot, Duration],
-                    attributes=["TYPE"],
+                    attributes=["type"],
                 )
             ),
             {
@@ -463,7 +461,7 @@ class FormsTest(test.TestCase):
             list(
                 cf.get_formfields_union(
                     plugins=[Text, PlainText, Honeypot, Duration],
-                    attributes=["TYPE", "label", "label_from", "region", "ordering"],
+                    attributes=["type", "label", "label_from", "region", "ordering"],
                 )
             ),
             [
@@ -503,9 +501,16 @@ class FormsTest(test.TestCase):
             form_kwargs={"auto_id": ""},
         )
 
-    @expectedFailure
     def test_incorrect_type(self):
         cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
+        self.assertEqual(
+            list(cf.type.validate(cf)),
+            [
+                Error("Required fields are missing: email"),
+                Warning("Field email with expected type email doesn't exist"),
+            ],
+        )
+
         Text.objects.create(
             parent=cf,
             region="form",
@@ -514,4 +519,7 @@ class FormsTest(test.TestCase):
             name="email",
         )
 
-        self.assertNotEqual(list(cf.type.validate(cf)), [])
+        self.assertEqual(
+            list(cf.type.validate(cf)),
+            [Error("Field email doesn't have expected type email")],
+        )

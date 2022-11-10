@@ -131,6 +131,14 @@ class FormFieldBase(models.Model):
             f"{self._meta.label_lower} needs a get_loaders implementation"
         )
 
+    @staticmethod
+    def set_field_type(sender, **kwargs):
+        if issubclass(sender, FormFieldBase) and not sender._meta.abstract:
+            sender.type = sender.__name__.lower()
+
+
+signals.class_prepared.connect(FormFieldBase.set_field_type)
+
 
 class ConfiguredForm(models.Model):
     name = models.CharField(_("name"), max_length=1000)
