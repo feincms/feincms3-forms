@@ -82,8 +82,7 @@ class NameField(models.CharField):
 
 class FormFieldBase(models.Model):
     """
-    Form field plugins must inherit this model if using the
-    ``get_formfields_union`` helper for configured form validation.
+    Form field plugins must inherit this model
     """
 
     name = NameField()
