@@ -2,8 +2,9 @@ from django import test
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
 from django.core.exceptions import ValidationError
+from django.test.utils import isolate_apps
 
-from feincms3_forms.models import FormType
+from feincms3_forms.models import FormFieldBase, FormType
 from feincms3_forms.renderer import create_form
 from feincms3_forms.reporting import get_loaders, simple_report, value_default
 from feincms3_forms.validation import Warning
@@ -462,3 +463,15 @@ class FormsTest(test.TestCase):
                 ("duration", "duration", "", "from"),
             ],
         )
+
+    @isolate_apps("testapp")
+    def test_form_field_base(self):
+        class FormField(FormFieldBase):
+            pass
+
+        instance = FormField()
+
+        with self.assertRaises(NotImplementedError):
+            instance.get_fields()
+        with self.assertRaises(NotImplementedError):
+            instance.get_loaders()
