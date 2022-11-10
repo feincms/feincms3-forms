@@ -173,6 +173,7 @@ class ConfiguredForm(models.Model):
             values.extend(attributes)
             for attr in attributes:
                 querysets = (
+                    # FIXME Only annotate if model doesn't have the field in the database
                     qs.annotate(**{attr: Value(getattr(qs.model, attr))})
                     for qs in querysets
                 )
