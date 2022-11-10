@@ -6,7 +6,7 @@ from django import forms
 from django.core import validators
 from django.core.exceptions import FieldDoesNotExist, ImproperlyConfigured
 from django.db import models
-from django.db.models import Value, signals
+from django.db.models import F, Value, signals
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.template.defaultfilters import truncatechars
 from django.utils.crypto import get_random_string
@@ -164,23 +164,30 @@ class ConfiguredForm(models.Model):
 
     def get_formfields_union(self, *, plugins, attributes=None):
         attributes = attributes or []
-        values = ["name", *attributes]
+        values = ["name"] + [f"__val_{index}" for index, _ in enumerate(attributes)]
         querysets = []
         for plugin in plugins:
             if not issubclass(plugin, FormFieldBase):
                 continue
             qs = plugin.objects.filter(parent=self)
-            vals = {}
-            for attr in attributes:
+            annotations = {}
+            for index, attr in enumerate(attributes):
+                # See https://code.djangoproject.com/ticket/28553
+                # If we could rely on values_list returning columns in the
+                # specified order **for all querysets** we wouldn't have to do
+                # this. But since that isn't the case we use .annotate() for
+                # all values, even those which 1:1 exist as a column in the
+                # database. I'm not sure if the enumeration is necessary but it
+                # certainly doesn't hurt (more).
                 try:
                     plugin._meta.get_field(attr)
                 except FieldDoesNotExist:
-                    vals[attr] = Value(getattr(plugin, attr, ""))
-            print(plugin, vals)
-            qs = qs.annotate(**vals)
+                    annotations[f"__val_{index}"] = Value(getattr(plugin, attr, ""))
+                else:
+                    annotations[f"__val_{index}"] = F(attr)
+            qs = qs.annotate(**annotations)
             querysets.append(qs.values_list(*values, flat=not attributes))
         qs = reduce(lambda p, q: p.union(q, all=True), querysets[1:], querysets[0])
-        print(str(qs.query))
         return list(qs)
 
 
