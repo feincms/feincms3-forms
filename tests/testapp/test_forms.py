@@ -1,3 +1,5 @@
+from unittest import expectedFailure
+
 from content_editor.contents import contents_for_item
 from django import test
 from django.contrib.auth.models import User
@@ -500,3 +502,16 @@ class FormsTest(test.TestCase):
             contents_for_item(cf, plugins=plugins),
             form_kwargs={"auto_id": ""},
         )
+
+    @expectedFailure
+    def test_incorrect_type(self):
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
+        Text.objects.create(
+            parent=cf,
+            region="form",
+            ordering=10,
+            label="Email",
+            name="email",
+        )
+
+        self.assertNotEqual(list(cf.type.validate(cf)), [])
