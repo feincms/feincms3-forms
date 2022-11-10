@@ -1,3 +1,4 @@
+from content_editor.contents import contents_for_item
 from django import test
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
@@ -10,14 +11,20 @@ from feincms3_forms.reporting import get_loaders, simple_report, value_default
 from feincms3_forms.validation import Warning
 
 from .models import (
+    URL,
+    Checkbox,
     ConfiguredForm,
+    Date,
     Duration,
     Email,
     Honeypot,
+    Integer,
     Log,
     PlainText,
+    Radio,
     Select,
     Text,
+    Textarea,
 )
 
 
@@ -475,3 +482,21 @@ class FormsTest(test.TestCase):
             instance.get_fields()
         with self.assertRaises(NotImplementedError):
             instance.get_loaders()
+
+    def test_all_simpleformfield_types(self):
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
+        plugins = [Text, Email, URL, Date, Integer, Textarea, Checkbox, Select, Radio]
+        for index, cls in enumerate(plugins):
+            cls.objects.create(
+                parent=cf,
+                region="form",
+                ordering=10 * index,
+                label="field",
+                name=f"field_{index}",
+            )
+
+        # Doesn't crash ;-)
+        create_form(
+            contents_for_item(cf, plugins=plugins),
+            form_kwargs={"auto_id": ""},
+        )
