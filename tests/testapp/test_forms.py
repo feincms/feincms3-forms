@@ -426,16 +426,47 @@ class FormsTest(test.TestCase):
             region="form",
             ordering=30,
         )
+        Duration.objects.create(
+            parent=cf,
+            region="form",
+            name="duration",
+            ordering=40,
+            label_from="from",
+            label_until="until",
+        )
 
         self.assertEqual(
             dict(
                 cf.get_formfields_union(
-                    plugins=[Text, PlainText, Honeypot],
+                    plugins=[Text, PlainText, Honeypot, Duration],
                     attributes=["TYPE"],
                 )
             ),
             {
                 "full_name": "text",
                 "honeypot": "honeypot",
+                "duration": "duration",
             },
+        )
+
+        print(
+            list(
+                cf.get_formfields_union(
+                    plugins=[Text, PlainText, Honeypot, Duration],
+                    attributes=["TYPE", "label"],
+                )
+            )
+        )
+        self.assertCountEqual(
+            list(
+                cf.get_formfields_union(
+                    plugins=[Text, PlainText, Honeypot, Duration],
+                    attributes=["TYPE", "label"],
+                )
+            ),
+            [
+                ("full_name", "text", "Full name"),
+                ("honeypot", "honeypot", ""),
+                ("duration", "duration", ""),
+            ],
         )

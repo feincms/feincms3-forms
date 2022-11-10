@@ -4,7 +4,7 @@ from functools import partial, reduce
 from content_editor.models import Type
 from django import forms
 from django.core import validators
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import FieldDoesNotExist, ImproperlyConfigured
 from django.db import models
 from django.db.models import Value, signals
 from django.db.models.fields import BLANK_CHOICE_DASH
@@ -163,28 +163,25 @@ class ConfiguredForm(models.Model):
             sender.type = property(lambda self: types.get(self.form_type))
 
     def get_formfields_union(self, *, plugins, attributes=None):
-        values = ["name"]
-        querysets = (
-            plugin.objects.filter(parent=self)
-            for plugin in plugins
-            if issubclass(plugin, FormFieldBase)
-        )
-        if attributes:
-            values.extend(attributes)
+        attributes = attributes or []
+        values = ["name", *attributes]
+        querysets = []
+        for plugin in plugins:
+            if not issubclass(plugin, FormFieldBase):
+                continue
+            qs = plugin.objects.filter(parent=self)
+            vals = {}
             for attr in attributes:
-                querysets = (
-                    # FIXME Only annotate if model doesn't have the field in the database
-                    qs.annotate(**{attr: Value(getattr(qs.model, attr))})
-                    for qs in querysets
-                )
-        querysets = [qs.values_list(*values, flat=len(values) == 1) for qs in querysets]
-        if len(querysets) > 1:
-            return reduce(lambda p, q: p.union(q, all=True), querysets)
-        return querysets[0]
-
-
-def _type(plugin):
-    return plugin.TYPE if hasattr(plugin, "TYPE") else plugin.__name__.lower()
+                try:
+                    plugin._meta.get_field(attr)
+                except FieldDoesNotExist:
+                    vals[attr] = Value(getattr(plugin, attr, ""))
+            print(plugin, vals)
+            qs = qs.annotate(**vals)
+            querysets.append(qs.values_list(*values, flat=not attributes))
+        qs = reduce(lambda p, q: p.union(q, all=True), querysets[1:], querysets[0])
+        print(str(qs.query))
+        return list(qs)
 
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
