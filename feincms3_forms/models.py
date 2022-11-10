@@ -1,12 +1,12 @@
 import re
-from functools import partial
+from functools import partial, reduce
 
 from content_editor.models import Type
 from django import forms
 from django.core import validators
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
-from django.db.models import signals
+from django.db.models import Value, signals
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.template.defaultfilters import truncatechars
 from django.utils.crypto import get_random_string
@@ -159,22 +159,23 @@ class ConfiguredForm(models.Model):
             types = {type.key: type for type in sender.FORMS}
             sender.type = property(lambda self: types.get(self.form_type))
 
-    def get_formfields_union(
-        self, *, plugins, values=None, field_plugin_bases=(FormFieldBase,)
-    ):
-        qs = None
+    def get_formfields_union(self, *, plugins, values=None):
         values = ["name"] if values is None else values
-        for plugin in plugins:
-            if not issubclass(plugin, field_plugin_bases):
-                continue
-            plugin_qs = plugin.objects.filter(parent=self).values_list(
-                *values, flat=len(values) == 1
-            )
-            if qs is None:
-                qs = plugin_qs
-            else:
-                qs = qs.union(plugin_qs, all=True)
-        return qs
+        querysets = (
+            plugin.objects.filter(parent=self)
+            for plugin in plugins
+            if issubclass(plugin, FormFieldBase)
+        )
+        if "TYPE" in values:
+            querysets = (qs.annotate(TYPE=Value(_type(qs.model))) for qs in querysets)
+        querysets = [qs.values_list(*values, flat=len(values) == 1) for qs in querysets]
+        if len(querysets) > 1:
+            return reduce(lambda p, q: p.union(q, all=True), querysets)
+        return querysets[0]
+
+
+def _type(plugin):
+    return plugin.TYPE if hasattr(plugin, "TYPE") else plugin.__name__.lower()
 
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)
@@ -262,13 +263,15 @@ class SimpleFieldBase(FormField):
 
         meta_class = type("Meta", (cls.Meta,), meta)
 
-        cls = type(
+        return type(
             f"{cls.__qualname__}_{type_name}",
             (cls,),
-            {"__module__": cls.__module__, "Meta": meta_class},
+            {
+                "__module__": cls.__module__,
+                "Meta": meta_class,
+                "TYPE": type_name,
+            },
         )
-        cls.TYPE = type_name
-        return cls
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)

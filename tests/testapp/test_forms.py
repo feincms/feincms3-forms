@@ -405,3 +405,37 @@ class FormsTest(test.TestCase):
         w = Warning("Hello")
         self.assertEqual(str(w), "Hello")
         self.assertEqual(repr(w), "<Warning: message='Hello'>")
+
+    def test_get_formfields_union(self):
+        cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
+        Text.objects.create(
+            parent=cf,
+            region="form",
+            ordering=10,
+            label="Full name",
+            name="full_name",
+        )
+        PlainText.objects.create(
+            parent=cf,
+            region="form",
+            ordering=20,
+            text="Something",
+        )
+        Honeypot.objects.create(
+            parent=cf,
+            region="form",
+            ordering=30,
+        )
+
+        self.assertEqual(
+            dict(
+                cf.get_formfields_union(
+                    plugins=[Text, PlainText, Honeypot],
+                    values=["name", "TYPE"],
+                )
+            ),
+            {
+                "full_name": "text",
+                "honeypot": "honeypot",
+            },
+        )
