@@ -461,13 +461,13 @@ class FormsTest(test.TestCase):
             list(
                 cf.get_formfields_union(
                     plugins=[Text, PlainText, Honeypot, Duration],
-                    attributes=["TYPE", "label", "label_from"],
+                    attributes=["TYPE", "label", "label_from", "region", "ordering"],
                 )
             ),
             [
-                ("full_name", "text", "Full name", ""),
-                ("honeypot", "honeypot", "", ""),
-                ("duration", "duration", "", "from"),
+                ("full_name", "text", "Full name", "", "form", 10),
+                ("honeypot", "honeypot", "", "", "form", 30),
+                ("duration", "duration", "", "from", "form", 40),
             ],
         )
 
