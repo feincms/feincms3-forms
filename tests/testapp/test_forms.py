@@ -31,14 +31,14 @@ def messages(response):
 class FormsTest(test.TestCase):
     def test_stuff(self):
         cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
-        item1 = Text.objects.create(
+        plugin1 = Text.objects.create(
             parent=cf,
             region="form",
             ordering=10,
             label="Full name",
             name="full_name",
         )
-        item2 = PlainText.objects.create(
+        plugin2 = PlainText.objects.create(
             parent=cf,
             region="form",
             ordering=20,
@@ -60,7 +60,7 @@ class FormsTest(test.TestCase):
         # print(response, response.content.decode("utf-8"))
 
         log = Log.objects.get()
-        loaders = get_loaders([item1, item2])
+        loaders = get_loaders([plugin1, plugin2])
         values = [loader(log.data) for loader in loaders]
         self.assertEqual(
             values,
@@ -77,7 +77,7 @@ class FormsTest(test.TestCase):
             [{"label": "Full name", "name": "full_name", "value": "Ø"}],
         )
 
-        report = simple_report(contents=[item1, item2], data=log.data)
+        report = simple_report(contents=[plugin1, plugin2], data=log.data)
         self.assertEqual(
             report,
             '<p><strong>Full name</strong> (full_name)</p> <p><a href="mailto:test@example.org">test@example.org</a></p>',
@@ -173,7 +173,7 @@ class FormsTest(test.TestCase):
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
         self.assertContains(response, "seems to have an invalid type")
 
-    def test_form_without_items(self):
+    def test_form_without_plugins(self):
         ConfiguredForm.objects.create(name="Test", form_type="contact")
         response = self.client.get("/")
         prefix = response.context["form"].prefix
@@ -194,23 +194,23 @@ class FormsTest(test.TestCase):
             "type": "select",
         }
 
-        item = Select(choices="a\nb", default_value="", **kw)
-        item.full_clean()  # Validates just fine
+        plugin = Select(choices="a\nb", default_value="", **kw)
+        plugin.full_clean()  # Validates just fine
         self.assertEqual(
-            item.get_fields()["name"].choices,
+            plugin.get_fields()["name"].choices,
             [("", "---------"), ("a", "a"), ("b", "b")],
         )
 
-        item.default_value = "b"
-        item.full_clean()  # Validates just fine
+        plugin.default_value = "b"
+        plugin.full_clean()  # Validates just fine
         self.assertEqual(
-            item.get_fields()["name"].choices,
+            plugin.get_fields()["name"].choices,
             [("a", "a"), ("b", "b")],
         )
 
         with self.assertRaises(ValidationError) as cm:
-            item.default_value = "c"
-            item.full_clean()
+            plugin.default_value = "c"
+            plugin.full_clean()
 
         self.assertEqual(
             cm.exception.error_dict["default_value"][0].message,
@@ -219,26 +219,26 @@ class FormsTest(test.TestCase):
 
         kw["type"] = "radio"
 
-        item = Select(choices="A\nB is fun", default_value="", **kw)
-        item.full_clean()  # Validates just fine
+        plugin = Select(choices="A\nB is fun", default_value="", **kw)
+        plugin.full_clean()  # Validates just fine
 
         self.assertEqual(
-            item.get_fields()["name"].choices,
+            plugin.get_fields()["name"].choices,
             [("a", "A"), ("b-is-fun", "B is fun")],
         )
-        self.assertNotIn("name", item.get_initial())
+        self.assertNotIn("name", plugin.get_initial())
 
-        item.default_value = "B is fun"
-        self.assertEqual(item.get_initial(), {"name": "b-is-fun"})
+        plugin.default_value = "B is fun"
+        self.assertEqual(plugin.get_initial(), {"name": "b-is-fun"})
 
-        item = Select(
+        plugin = Select(
             choices="KEY VALUE | pretty label\n OTHER VALUE | other pretty label \n\n",
             default_value="",
             **kw,
         )
-        item.full_clean()  # Validates just fine
+        plugin.full_clean()  # Validates just fine
         self.assertEqual(
-            item.get_fields()["name"].choices,
+            plugin.get_fields()["name"].choices,
             [
                 ("KEY VALUE", "pretty label"),
                 ("OTHER VALUE", "other pretty label"),
@@ -299,7 +299,7 @@ class FormsTest(test.TestCase):
     def test_initial(self):
         """Default values work and can be overridden from the outside"""
         cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
-        item = Text.objects.create(
+        plugin = Text.objects.create(
             parent=cf,
             region="form",
             ordering=10,
@@ -309,7 +309,7 @@ class FormsTest(test.TestCase):
         )
 
         form = create_form(
-            [item],
+            [plugin],
             form_kwargs={"auto_id": ""},
         )
         self.assertHTMLEqual(
@@ -318,7 +318,7 @@ class FormsTest(test.TestCase):
         )
 
         form = create_form(
-            [item], form_kwargs={"auto_id": "", "initial": {"full_name": "Franz"}}
+            [plugin], form_kwargs={"auto_id": "", "initial": {"full_name": "Franz"}}
         )
         self.assertHTMLEqual(
             str(form["full_name"]),
@@ -400,3 +400,8 @@ class FormsTest(test.TestCase):
 
         # Very improbable
         self.assertNotEqual(field.to_python(""), field.to_python(""))
+
+    def test_validation_message(self):
+        w = Warning("Hello")
+        self.assertEqual(str(w), "Hello")
+        self.assertEqual(repr(w), "<Warning: message='Hello'>")

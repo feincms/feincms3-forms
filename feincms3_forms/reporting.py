@@ -6,10 +6,12 @@ from django.utils.html import format_html, mark_safe
 from feincms3_forms.models import FormFieldBase
 
 
-def get_loaders(items):
+def get_loaders(plugins):
     return list(
         chain.from_iterable(
-            item.get_loaders() for item in items if isinstance(item, FormFieldBase)
+            plugin.get_loaders()
+            for plugin in plugins
+            if isinstance(plugin, FormFieldBase)
         )
     )
 
