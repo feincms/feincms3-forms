@@ -431,7 +431,7 @@ class FormsTest(test.TestCase):
             dict(
                 cf.get_formfields_union(
                     plugins=[Text, PlainText, Honeypot],
-                    values=["name", "TYPE"],
+                    attributes=["TYPE"],
                 )
             ),
             {

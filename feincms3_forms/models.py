@@ -10,7 +10,7 @@ from django.db.models import Value, signals
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.template.defaultfilters import truncatechars
 from django.utils.crypto import get_random_string
-from django.utils.functional import cached_property
+from django.utils.functional import cached_property, classproperty
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -90,6 +90,10 @@ class FormFieldBase(models.Model):
     class Meta:
         abstract = True
 
+    @classproperty
+    def TYPE(cls):
+        return cls.__name__.lower()
+
     def get_fields(self, **kwargs):
         """
         Return a dictionary of form fields
@@ -158,15 +162,20 @@ class ConfiguredForm(models.Model):
             types = {type.key: type for type in sender.FORMS}
             sender.type = property(lambda self: types.get(self.form_type))
 
-    def get_formfields_union(self, *, plugins, values=None):
-        values = ["name"] if values is None else values
+    def get_formfields_union(self, *, plugins, attributes=None):
+        values = ["name"]
         querysets = (
             plugin.objects.filter(parent=self)
             for plugin in plugins
             if issubclass(plugin, FormFieldBase)
         )
-        if "TYPE" in values:
-            querysets = (qs.annotate(TYPE=Value(_type(qs.model))) for qs in querysets)
+        if attributes:
+            values.extend(attributes)
+            for attr in attributes:
+                querysets = (
+                    qs.annotate(**{attr: Value(getattr(qs.model, attr))})
+                    for qs in querysets
+                )
         querysets = [qs.values_list(*values, flat=len(values) == 1) for qs in querysets]
         if len(querysets) > 1:
             return reduce(lambda p, q: p.union(q, all=True), querysets)

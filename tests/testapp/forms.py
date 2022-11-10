@@ -7,10 +7,12 @@ from feincms3_forms.validation import validate_required_fields, validate_uniquen
 
 
 def validate_contact_form(configured_form):
-    names = list(configured_form.get_formfields_union(plugins=renderer.plugins()))
+    fields = configured_form.get_formfields_union(
+        plugins=renderer.plugins(), attributes=["TYPE"]
+    )
     return [
-        *validate_uniqueness(names),
-        *validate_required_fields(names, {"email"}),
+        *validate_uniqueness([name for name, _ in fields]),
+        *validate_required_fields(dict(fields), {"email"}),
     ]
 
 
