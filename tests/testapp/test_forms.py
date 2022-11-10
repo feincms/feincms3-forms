@@ -449,24 +449,16 @@ class FormsTest(test.TestCase):
             },
         )
 
-        print(
-            list(
-                cf.get_formfields_union(
-                    plugins=[Text, PlainText, Honeypot, Duration],
-                    attributes=["TYPE", "label"],
-                )
-            )
-        )
         self.assertCountEqual(
             list(
                 cf.get_formfields_union(
                     plugins=[Text, PlainText, Honeypot, Duration],
-                    attributes=["TYPE", "label"],
+                    attributes=["TYPE", "label", "label_from"],
                 )
             ),
             [
-                ("full_name", "text", "Full name"),
-                ("honeypot", "honeypot", ""),
-                ("duration", "duration", ""),
+                ("full_name", "text", "Full name", ""),
+                ("honeypot", "honeypot", "", ""),
+                ("duration", "duration", "", "from"),
             ],
         )
