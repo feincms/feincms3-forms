@@ -11,8 +11,8 @@ def validate_contact_form(configured_form):
         plugins=renderer.plugins(), attributes=["TYPE"]
     )
     return [
-        *validate_uniqueness([name for name, _ in fields]),
-        *validate_required_fields(dict(fields), {"email"}),
+        *validate_uniqueness(fields),
+        *validate_required_fields(fields, {"email"}),
     ]
 
 

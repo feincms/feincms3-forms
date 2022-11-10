@@ -33,8 +33,8 @@ class Error(Message):
         super().__init__(constants.ERROR, *args, **kwargs)
 
 
-def validate_uniqueness(names):
-    counts = Counter(names)
+def validate_uniqueness(fields):
+    counts = Counter(field[0] for field in fields)
     if repeated := [pair for pair in counts.items() if pair[1] > 1]:
         return [
             Warning(
@@ -45,8 +45,8 @@ def validate_uniqueness(names):
     return []
 
 
-def validate_required_fields(names, required):
-    if missing := set(required) - set(names):
+def validate_required_fields(fields, required):
+    if missing := set(required) - {field[0] for field in fields}:
         return [
             Error(_("Required fields are missing: %s") % ", ".join(sorted(missing)))
         ]

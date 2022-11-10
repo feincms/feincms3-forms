@@ -186,7 +186,7 @@ class ConfiguredForm(models.Model):
                 else:
                     annotations[f"__val_{index}"] = F(attr)
             qs = qs.annotate(**annotations)
-            querysets.append(qs.values_list(*values, flat=not attributes))
+            querysets.append(qs.values_list(*values))
         qs = reduce(lambda p, q: p.union(q, all=True), querysets[1:], querysets[0])
         return list(qs)
 

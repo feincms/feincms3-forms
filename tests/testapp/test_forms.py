@@ -285,7 +285,7 @@ class FormsTest(test.TestCase):
 
         self.assertCountEqual(
             cf.get_formfields_union(plugins=[Text, Honeypot]),
-            ["subject", "honeypot"],
+            [("subject",), ("honeypot",)],
         )
 
         response = self.client.get("/")
@@ -367,7 +367,7 @@ class FormsTest(test.TestCase):
 
         self.assertCountEqual(
             cf.get_formfields_union(plugins=[Duration]),
-            ["duration"],
+            [("duration",)],
         )
 
         response = self.client.get("/")
