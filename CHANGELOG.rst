@@ -19,5 +19,5 @@ Change log
 - Time to leave the zero.zero.whatever versions behind!
 
 
-.. _1.0: https://github.com/matthiask/feincms3-forms/commit/e50451b5661
+.. _0.1: https://github.com/matthiask/feincms3-forms/commit/93cba055a85
 .. _0.2: https://github.com/matthiask/feincms3-forms/compare/0.1...0.2
