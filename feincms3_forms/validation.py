@@ -38,7 +38,7 @@ def validate_uniqueness(fields):
     if repeated := [pair for pair in counts.items() if pair[1] > 1]:
         return [
             Warning(
-                _("Fields exist more than once: %s")
+                _("Fields exist more than once: %s.")
                 % ", ".join(f"{name} ({count})" for name, count in sorted(repeated))
             )
         ]
@@ -48,28 +48,31 @@ def validate_uniqueness(fields):
 def validate_required_fields(fields, required):
     if missing := set(required) - {field[0] for field in fields}:
         return [
-            Error(_("Required fields are missing: %s") % ", ".join(sorted(missing)))
+            Error(_("Required fields are missing: %s.") % ", ".join(sorted(missing)))
         ]
     return []
 
 
-def validate_types(field_types, types):
+def validate_fields(fields, schema):
     errors = []
-    for field, type in types.items():
-        if field not in field_types:
+    field_dict = dict(fields)
+    for field, field_schema in schema.items():
+        if field not in field_dict:
             errors.append(
-                Warning(
-                    _("Field {field} with expected type {type} doesn't exist").format(
-                        field=field, type=type
+                Warning(_("Field '{field}' doesn't exist.").format(field=field))
+            )
+            continue
+        for attribute, value in field_schema.items():
+            if field_dict[field][attribute] != value:
+                errors.append(
+                    Error(
+                        _(
+                            "The '{attribute}' attribute of the field '{field}' doesn't have the expected value '{value}'."
+                        ).format(
+                            field=field,
+                            attribute=attribute,
+                            value=value,
+                        )
                     )
                 )
-            )
-        elif field_types[field] != type:
-            errors.append(
-                Error(
-                    _("Field {field} doesn't have expected type {type}").format(
-                        field=field, type=type
-                    )
-                )
-            )
     return errors

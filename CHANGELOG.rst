@@ -8,7 +8,9 @@ Change log
 .. _Next version: https://github.com/matthiask/feincms3-forms/compare/0.1...main
 
 - Changed ``ConfiguredForm.get_formfields_union`` to allow fetching arbitrary
-  attributes from plugins.
+  attributes from plugins, completely changed the return value to a list of
+  ``(name, {...attributes...})`` tuples, made validation utilities work with
+  this new data structure.
 
 
 `0.1`_ (2022-11-10)

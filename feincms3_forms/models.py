@@ -174,9 +174,9 @@ class ConfiguredForm(models.Model):
         values = ["name"]
         columns = []
         for index, attribute in enumerate(attributes or []):
-            column = f"__val_{index}"
-            values.append(column)
-            columns.append((column, attribute))
+            alias = f"__val_{index}"
+            values.append(alias)
+            columns.append((alias, attribute))
 
         querysets = []
         for plugin in plugins:
@@ -184,7 +184,7 @@ class ConfiguredForm(models.Model):
                 continue
             qs = plugin.objects.filter(parent=self)
             annotations = {}
-            for column, attribute in columns:
+            for alias, attribute in columns:
                 # See https://code.djangoproject.com/ticket/28553
                 # If we could rely on values_list returning columns in the
                 # specified order **for all querysets** we wouldn't have to do
@@ -195,13 +195,16 @@ class ConfiguredForm(models.Model):
                 try:
                     plugin._meta.get_field(attribute)
                 except FieldDoesNotExist:
-                    annotations[column] = Value(getattr(plugin, attribute, ""))
+                    annotations[alias] = Value(getattr(plugin, attribute, ""))
                 else:
-                    annotations[column] = F(attribute)
+                    annotations[alias] = F(attribute)
             qs = qs.annotate(**annotations)
             querysets.append(qs.values_list(*values))
         qs = reduce(lambda p, q: p.union(q, all=True), querysets[1:], querysets[0])
-        return list(qs)
+        return [
+            (row[0], {column[1]: value for column, value in zip(columns, row[1:])})
+            for row in qs
+        ]
 
 
 signals.class_prepared.connect(ConfiguredForm.fill_form_choices)

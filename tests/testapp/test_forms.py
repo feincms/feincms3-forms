@@ -124,7 +124,7 @@ class FormsTest(test.TestCase):
         )
         self.assertEqual(
             list(cf.type.validate(cf)),
-            [Warning("Fields exist more than once: email (2)")],
+            [Warning("Fields exist more than once: email (2).")],
         )
 
         data = {
@@ -161,7 +161,7 @@ class FormsTest(test.TestCase):
         m = messages(response)
         self.assertEqual(len(m), 3)
         self.assertTrue(m[0].startswith('Validation of "<'))
-        self.assertEqual(m[1], "Fields exist more than once: email (2)")
+        self.assertEqual(m[1], "Fields exist more than once: email (2).")
         self.assertTrue(m[2].endswith("was changed successfully."))
 
     def test_simple_admin_validation(self):
@@ -285,7 +285,7 @@ class FormsTest(test.TestCase):
 
         self.assertCountEqual(
             cf.get_formfields_union(plugins=[Text, Honeypot]),
-            [("subject",), ("honeypot",)],
+            [("subject", {}), ("honeypot", {})],
         )
 
         response = self.client.get("/")
@@ -367,7 +367,7 @@ class FormsTest(test.TestCase):
 
         self.assertCountEqual(
             cf.get_formfields_union(plugins=[Duration]),
-            [("duration",)],
+            [("duration", {})],
         )
 
         response = self.client.get("/")
@@ -443,31 +443,42 @@ class FormsTest(test.TestCase):
             label_until="until",
         )
 
-        self.assertEqual(
-            dict(
-                cf.get_formfields_union(
-                    plugins=[Text, PlainText, Honeypot, Duration],
-                    attributes=["type"],
-                )
-            ),
-            {
-                "full_name": "text",
-                "honeypot": "honeypot",
-                "duration": "duration",
-            },
-        )
-
         self.assertCountEqual(
-            list(
-                cf.get_formfields_union(
-                    plugins=[Text, PlainText, Honeypot, Duration],
-                    attributes=["type", "label", "label_from", "region", "ordering"],
-                )
+            cf.get_formfields_union(
+                plugins=[Text, PlainText, Honeypot, Duration],
+                attributes=["type", "label", "label_from", "region", "ordering"],
             ),
             [
-                ("full_name", "text", "Full name", "", "form", 10),
-                ("honeypot", "honeypot", "", "", "form", 30),
-                ("duration", "duration", "", "from", "form", 40),
+                (
+                    "full_name",
+                    {
+                        "type": "text",
+                        "label": "Full name",
+                        "label_from": "",
+                        "region": "form",
+                        "ordering": 10,
+                    },
+                ),
+                (
+                    "honeypot",
+                    {
+                        "type": "honeypot",
+                        "label": "",
+                        "label_from": "",
+                        "region": "form",
+                        "ordering": 30,
+                    },
+                ),
+                (
+                    "duration",
+                    {
+                        "type": "duration",
+                        "label": "",
+                        "label_from": "from",
+                        "region": "form",
+                        "ordering": 40,
+                    },
+                ),
             ],
         )
 
@@ -506,8 +517,8 @@ class FormsTest(test.TestCase):
         self.assertEqual(
             list(cf.type.validate(cf)),
             [
-                Error("Required fields are missing: email"),
-                Warning("Field email with expected type email doesn't exist"),
+                Error("Required fields are missing: email."),
+                Warning("Field 'email' doesn't exist."),
             ],
         )
 
@@ -521,5 +532,9 @@ class FormsTest(test.TestCase):
 
         self.assertEqual(
             list(cf.type.validate(cf)),
-            [Error("Field email doesn't have expected type email")],
+            [
+                Error(
+                    "The 'type' attribute of the field 'email' doesn't have the expected value 'email'."
+                )
+            ],
         )
