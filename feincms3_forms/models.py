@@ -10,7 +10,7 @@ from django.db.models import F, Value, signals
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.template.defaultfilters import truncatechars
 from django.utils.crypto import get_random_string
-from django.utils.functional import cached_property, classproperty
+from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -89,10 +89,6 @@ class FormFieldBase(models.Model):
 
     class Meta:
         abstract = True
-
-    @classproperty
-    def TYPE(cls):
-        return cls.__name__.lower()
 
     def get_fields(self, **kwargs):
         """
