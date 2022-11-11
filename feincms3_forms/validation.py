@@ -59,7 +59,9 @@ def validate_fields(fields, schema):
     for field, field_schema in schema.items():
         if field not in field_dict:
             errors.append(
-                Warning(_("Field '{field}' doesn't exist.").format(field=field))
+                Warning(
+                    _("Expected field '{field}' doesn't exist.").format(field=field)
+                )
             )
             continue
         for attribute, value in field_schema.items():
