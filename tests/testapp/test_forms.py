@@ -104,7 +104,7 @@ class FormsTest(test.TestCase):
         # print(response, response.content.decode("utf-8"))
 
         self.assertContains(response, "Validation of ")
-        self.assertContains(response, "Required fields are missing: email")
+        self.assertContains(response, "Required fields are missing: &#x27;email&#x27;.")
 
         Email.objects.create(
             parent=cf,
@@ -124,7 +124,7 @@ class FormsTest(test.TestCase):
         )
         self.assertEqual(
             list(cf.type.validate(cf)),
-            [Warning("Fields exist more than once: email (2).")],
+            [Warning("Fields exist more than once: 'email' (2).")],
         )
 
         data = {
@@ -161,7 +161,7 @@ class FormsTest(test.TestCase):
         m = messages(response)
         self.assertEqual(len(m), 3)
         self.assertTrue(m[0].startswith('Validation of "<'))
-        self.assertEqual(m[1], "Fields exist more than once: email (2).")
+        self.assertEqual(m[1], "Fields exist more than once: 'email' (2).")
         self.assertTrue(m[2].endswith("was changed successfully."))
 
     def test_simple_admin_validation(self):
@@ -517,7 +517,7 @@ class FormsTest(test.TestCase):
         self.assertEqual(
             list(cf.type.validate(cf)),
             [
-                Error("Required fields are missing: email."),
+                Error("Required fields are missing: 'email'."),
                 Warning("Expected field 'email' doesn't exist."),
             ],
         )

@@ -38,8 +38,11 @@ def validate_uniqueness(fields):
     if repeated := [pair for pair in counts.items() if pair[1] > 1]:
         return [
             Warning(
-                _("Fields exist more than once: %s.")
-                % ", ".join(f"{name} ({count})" for name, count in sorted(repeated))
+                _("Fields exist more than once: {fields}.").format(
+                    fields=", ".join(
+                        f"'{name}' ({count})" for name, count in sorted(repeated)
+                    )
+                )
             )
         ]
     return []
@@ -48,7 +51,11 @@ def validate_uniqueness(fields):
 def validate_required_fields(fields, required):
     if missing := set(required) - {field[0] for field in fields}:
         return [
-            Error(_("Required fields are missing: %s.") % ", ".join(sorted(missing)))
+            Error(
+                _("Required fields are missing: {fields}.").format(
+                    fields=", ".join(f"'{name}'" for name in sorted(missing))
+                )
+            )
         ]
     return []
 
