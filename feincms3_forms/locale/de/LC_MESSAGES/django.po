@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-05 16:07+0100\n"
+"POT-Creation-Date: 2022-11-11 10:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,138 +30,130 @@ msgstr "\"{obj}\" wurde validiert."
 
 #: admin.py:49
 #, python-brace-format
-msgid ""
-"\"{obj}\" could not be validated because it seems to have an invalid type."
-msgstr ""
-"\"{obj}\" konnte nicht validiert werden, weil der Formulartyp ungültig ist."
+msgid "\"{obj}\" could not be validated because it seems to have an invalid type."
+msgstr "\"{obj}\" konnte nicht validiert werden, weil der Formulartyp ungültig ist."
 
 #: admin.py:78
 msgid "Advanced"
 msgstr "Fortgeschritten"
 
-#: models.py:40 models.py:110
+#: models.py:45 models.py:140
 msgid "name"
 msgstr "Name"
 
-#: models.py:48
-msgid ""
-"Enter a value consisting only of lowercase letters, numbers and the "
-"underscore."
-msgstr ""
-"Geben Sie einen Wert ein, welcher nur Kleinbuchstaben, Zahlen und "
-"Unterstriche enthält."
+#: models.py:53
+msgid "Enter a value consisting only of lowercase letters, numbers and the underscore."
+msgstr "Geben Sie einen Wert ein, welcher nur Kleinbuchstaben, Zahlen und Unterstriche enthält."
 
-#: models.py:57
-msgid ""
-"Data is saved using this name. Changing it may result in data loss. This "
-"field only allows a-z, 0-9 and _ as characters."
-msgstr ""
-"Die Daten werden mit diesem Namen gespeichert. Änderungen könnten "
-"Datenverlust zur Folge haben. Erlaubte Zeichen sind a-z, 0-9 und _."
+#: models.py:62
+msgid "Data is saved using this name. Changing it may result in data loss. This field only allows a-z, 0-9 and _ as characters."
+msgstr "Die Daten werden mit diesem Namen gespeichert. Änderungen könnten Datenverlust zur Folge haben. Erlaubte Zeichen sind a-z, 0-9 und _."
 
-#: models.py:111
+#: models.py:141
 msgid "form type"
 msgstr "Formulartyp"
 
-#: models.py:116 models.py:117
+#: models.py:146 models.py:147
 msgid "configured form"
 msgstr "Konfiguriertes Formular"
 
-#: models.py:160
+#: models.py:210
 msgid "label"
 msgstr "Beschriftung"
 
-#: models.py:161
+#: models.py:211
 msgid "is required"
 msgstr "ist notwendig"
 
-#: models.py:163
+#: models.py:213
 msgid "help text"
 msgstr "Hilfstext"
 
-#: models.py:190
+#: models.py:240
 msgid "text field"
 msgstr "Textfeld"
 
-#: models.py:191
+#: models.py:241
 msgid "email address field"
 msgstr "E-Mail-Feld"
 
-#: models.py:192
+#: models.py:242
 msgid "URL field"
 msgstr "URL-Feld"
 
-#: models.py:193
+#: models.py:243
 msgid "date field"
 msgstr "Datumsfeld"
 
-#: models.py:194
+#: models.py:244
 msgid "integer field"
 msgstr "Ganzzahlfeld"
 
-#: models.py:195
+#: models.py:245
 msgid "multiline text field"
 msgstr "Mehrzeiliges Textfeld"
 
-#: models.py:196
+#: models.py:246
 msgid "checkbox field"
 msgstr "Checkbox-Feld"
 
-#: models.py:197
+#: models.py:247
 msgid "dropdown field"
 msgstr "Dropdown-Feld"
 
-#: models.py:198
+#: models.py:248
 msgid "radio input field"
 msgstr "Radioauswahl-Feld"
 
-#: models.py:200
+#: models.py:250
 msgid "type"
 msgstr "Typ"
 
-#: models.py:203
+#: models.py:253
 msgid "choices"
 msgstr "Auswahl"
 
-#: models.py:205
-msgid ""
-"Enter one choice per line. You may optionally provide the value and the "
-"label separated by a pipe symbol (|)."
-msgstr ""
-"Eine Auswahlmöglichkeit pro Zeile. Optional kann der Wert und die "
-"Bezeichnung angegeben werden, separiert mit einem Pipe-Symbol (|)."
+#: models.py:255
+msgid "Enter one choice per line. You may optionally provide the value and the label separated by a pipe symbol (|)."
+msgstr "Eine Auswahlmöglichkeit pro Zeile. Optional kann der Wert und die Bezeichnung angegeben werden, separiert mit einem Pipe-Symbol (|)."
 
-#: models.py:210
+#: models.py:260
 msgid "placeholder"
 msgstr "Platzhalter"
 
-#: models.py:215
+#: models.py:265
 msgid "default value"
 msgstr "Standardwert"
 
-#: models.py:218
+#: models.py:268
 msgid "Optional default value of the field."
 msgstr "Optionaler vorgegebener Standardwert für das Feld."
 
-#: models.py:220
+#: models.py:270
 msgid "max length"
 msgstr "Maximale Länge"
 
-#: models.py:256
+#: models.py:308
 #, python-format
-msgid ""
-"The specified default value \"%(default)s\" isn't part of the available "
-"choices."
-msgstr ""
-"Der angegebene Standardwert \"%(default)s\" ist nicht Teil der verfügbaren "
-"Werte."
+msgid "The specified default value \"%(default)s\" isn't part of the available choices."
+msgstr "Der angegebene Standardwert \"%(default)s\" ist nicht Teil der verfügbaren Werte."
 
 #: validation.py:41
-#, python-format
-msgid "Fields exist more than once: %s"
-msgstr "Felder existieren mehr als einmal: %s"
+#, python-brace-format
+msgid "Fields exist more than once: {fields}."
+msgstr "Felder existieren mehr als einmal: {fields}."
 
-#: validation.py:51
-#, python-format
-msgid "Required fields are missing: %s"
-msgstr "Notwendige Felder fehlen: %s"
+#: validation.py:55
+#, python-brace-format
+msgid "Required fields are missing: {fields}."
+msgstr "Notwendige Felder fehlen: {fields}."
+
+#: validation.py:70
+#, python-brace-format
+msgid "Expected field '{field}' doesn't exist."
+msgstr "Erwartetes Feld '{field}' existiert nicht."
+
+#: validation.py:79
+#, python-brace-format
+msgid "The '{attribute}' attribute of the field '{field}' doesn't have the expected value '{value}'."
+msgstr "Das Attribut '{attribute}' des Feldes '{field}' hat nicht den erwarteten Wert '{value}'."
