@@ -171,15 +171,20 @@ class ConfiguredForm(models.Model):
             sender.type = property(lambda self: types.get(self.form_type))
 
     def get_formfields_union(self, *, plugins, attributes=None):
-        attributes = attributes or []
-        values = ["name"] + [f"__val_{index}" for index, _ in enumerate(attributes)]
+        values = ["name"]
+        columns = []
+        for index, attribute in enumerate(attributes or []):
+            column = f"__val_{index}"
+            values.append(column)
+            columns.append((column, attribute))
+
         querysets = []
         for plugin in plugins:
             if not issubclass(plugin, FormFieldBase):
                 continue
             qs = plugin.objects.filter(parent=self)
             annotations = {}
-            for index, attr in enumerate(attributes):
+            for column, attribute in columns:
                 # See https://code.djangoproject.com/ticket/28553
                 # If we could rely on values_list returning columns in the
                 # specified order **for all querysets** we wouldn't have to do
@@ -188,11 +193,11 @@ class ConfiguredForm(models.Model):
                 # database. I'm not sure if the enumeration is necessary but it
                 # certainly doesn't hurt (more).
                 try:
-                    plugin._meta.get_field(attr)
+                    plugin._meta.get_field(attribute)
                 except FieldDoesNotExist:
-                    annotations[f"__val_{index}"] = Value(getattr(plugin, attr, ""))
+                    annotations[column] = Value(getattr(plugin, attribute, ""))
                 else:
-                    annotations[f"__val_{index}"] = F(attr)
+                    annotations[column] = F(attribute)
             qs = qs.annotate(**annotations)
             querysets.append(qs.values_list(*values))
         qs = reduce(lambda p, q: p.union(q, all=True), querysets[1:], querysets[0])
