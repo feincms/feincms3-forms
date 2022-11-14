@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-11 10:03+0100\n"
+"POT-Creation-Date: 2022-11-14 09:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -105,35 +105,43 @@ msgstr "Dropdown-Feld"
 msgid "radio input field"
 msgstr "Radioauswahl-Feld"
 
+#: models.py:249
+msgid "select multiple"
+msgstr "Mehrfachauswahl"
+
 #: models.py:250
+msgid "multiple checkboxes"
+msgstr "Mehrere Checkboxen"
+
+#: models.py:252
 msgid "type"
 msgstr "Typ"
 
-#: models.py:253
+#: models.py:255
 msgid "choices"
 msgstr "Auswahl"
 
-#: models.py:255
+#: models.py:257
 msgid "Enter one choice per line. You may optionally provide the value and the label separated by a pipe symbol (|)."
 msgstr "Eine Auswahlmöglichkeit pro Zeile. Optional kann der Wert und die Bezeichnung angegeben werden, separiert mit einem Pipe-Symbol (|)."
 
-#: models.py:260
+#: models.py:262
 msgid "placeholder"
 msgstr "Platzhalter"
 
-#: models.py:265
+#: models.py:267
 msgid "default value"
 msgstr "Standardwert"
 
-#: models.py:268
+#: models.py:270
 msgid "Optional default value of the field."
 msgstr "Optionaler vorgegebener Standardwert für das Feld."
 
-#: models.py:270
+#: models.py:272
 msgid "max length"
 msgstr "Maximale Länge"
 
-#: models.py:308
+#: models.py:310
 #, python-format
 msgid "The specified default value \"%(default)s\" isn't part of the available choices."
 msgstr "Der angegebene Standardwert \"%(default)s\" ist nicht Teil der verfügbaren Werte."

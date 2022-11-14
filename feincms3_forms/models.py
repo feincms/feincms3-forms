@@ -246,6 +246,8 @@ class SimpleFieldBase(FormField):
         CHECKBOX = "checkbox", _("checkbox field")
         SELECT = "select", _("dropdown field")
         RADIO = "radio", _("radio input field")
+        SELECT_MULTIPLE = "select-multiple", _("select multiple")
+        CHECKBOX_SELECT_MULTIPLE = "checkbox-select-multiple", _("multiple checkboxes")
 
     type = models.CharField(_("type"), max_length=1000, editable=False)
 
@@ -403,6 +405,19 @@ class SimpleFieldBase(FormField):
             return super().get_fields(
                 form_class=forms.ChoiceField,
                 widget=forms.RadioSelect,
+                choices=self.get_choices(),
+            )
+
+        elif self.type == T.SELECT_MULTIPLE:
+            return super().get_fields(
+                form_class=forms.MultipleChoiceField,
+                choices=self.get_choices(),
+            )
+
+        elif self.type == T.CHECKBOX_SELECT_MULTIPLE:
+            return super().get_fields(
+                form_class=forms.MultipleChoiceField,
+                widget=forms.CheckboxSelectMultiple,
                 choices=self.get_choices(),
             )
 

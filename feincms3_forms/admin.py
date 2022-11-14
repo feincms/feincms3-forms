@@ -100,7 +100,12 @@ class SimpleFieldInline(FormFieldInline):
         elif model.TYPE in {T.CHECKBOX}:
             kwargs.setdefault("advanced_fields", ["help_text", "default_value"])
 
-        elif model.TYPE in {T.SELECT, T.RADIO}:
+        elif model.TYPE in {
+            T.SELECT,
+            T.RADIO,
+            T.SELECT_MULTIPLE,
+            T.CHECKBOX_SELECT_MULTIPLE,
+        }:
             kwargs.setdefault(
                 "core_fields", ["name", "label", "is_required", "choices"]
             )

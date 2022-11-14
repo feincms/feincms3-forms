@@ -85,6 +85,8 @@ Create a module containing the models for the form builder (``app.forms.models``
     Checkbox = SimpleField.proxy(SimpleField.Type.CHECKBOX)
     Select = SimpleField.proxy(SimpleField.Type.SELECT)
     Radio = SimpleField.proxy(SimpleField.Type.RADIO)
+    SelectMultiple = SimpleField.proxy(SimpleField.Type.SELECT_MULTIPLE)
+    CheckboxSelectMultiple = SimpleField.proxy(SimpleField.Type.CHECKBOX_SELECT_MULTIPLE)
 
     class RichText(plugins.richtext.RichText, ConfiguredFormPlugin):
         pass
