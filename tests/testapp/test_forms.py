@@ -13,6 +13,7 @@ from feincms3_forms.validation import Error, Warning
 from .models import (
     URL,
     Checkbox,
+    CheckboxSelectMultiple,
     ConfiguredForm,
     Date,
     Duration,
@@ -23,6 +24,7 @@ from .models import (
     PlainText,
     Radio,
     Select,
+    SelectMultiple,
     Text,
     Textarea,
 )
@@ -496,7 +498,19 @@ class FormsTest(test.TestCase):
 
     def test_all_simpleformfield_types(self):
         cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
-        plugins = [Text, Email, URL, Date, Integer, Textarea, Checkbox, Select, Radio]
+        plugins = [
+            Text,
+            Email,
+            URL,
+            Date,
+            Integer,
+            Textarea,
+            Checkbox,
+            Select,
+            Radio,
+            SelectMultiple,
+            CheckboxSelectMultiple,
+        ]
         for index, cls in enumerate(plugins):
             cls.objects.create(
                 parent=cf,
