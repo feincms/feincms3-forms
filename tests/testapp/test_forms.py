@@ -448,7 +448,14 @@ class FormsTest(test.TestCase):
         self.assertCountEqual(
             cf.get_formfields_union(
                 plugins=[Text, PlainText, Honeypot, Duration],
-                attributes=["type", "label", "label_from", "region", "ordering"],
+                attributes=[
+                    "type",
+                    "label",
+                    "label_from",
+                    "region",
+                    "ordering",
+                    "is_required",
+                ],
             ),
             [
                 (
@@ -459,6 +466,7 @@ class FormsTest(test.TestCase):
                         "label_from": "",
                         "region": "form",
                         "ordering": 10,
+                        "is_required": True,
                     },
                 ),
                 (
@@ -469,6 +477,7 @@ class FormsTest(test.TestCase):
                         "label_from": "",
                         "region": "form",
                         "ordering": 30,
+                        "is_required": "",
                     },
                 ),
                 (
@@ -479,6 +488,7 @@ class FormsTest(test.TestCase):
                         "label_from": "from",
                         "region": "form",
                         "ordering": 40,
+                        "is_required": "",
                     },
                 ),
             ],
