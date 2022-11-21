@@ -1,6 +1,7 @@
 from urllib.parse import quote as urlquote
 
 from content_editor.admin import ContentEditor, ContentEditorInline
+from django import forms
 from django.contrib import messages
 from django.contrib.admin.utils import quote
 from django.urls import reverse
@@ -79,7 +80,16 @@ class FormFieldInline(ContentEditorInline):
         ]
 
 
+class SimpleFieldForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.TYPE == self.instance.Type.SELECT:
+            self["placeholder"].label = _("Empty choice label")
+
+
 class SimpleFieldInline(FormFieldInline):
+    form = SimpleFieldForm
+
     def get_queryset(self, request):
         return super().get_queryset(request).filter(type=self.model.TYPE)
 

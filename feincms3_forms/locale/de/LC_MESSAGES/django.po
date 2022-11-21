@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-14 09:57+0100\n"
+"POT-Creation-Date: 2022-11-21 16:16+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,24 +18,28 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:34
+#: admin.py:35
 #, python-brace-format
 msgid "Validation of \"{obj}\" wasn't completely successful."
 msgstr "Die Validierung von \"{obj}\" war nicht vollständig erfolgreich."
 
-#: admin.py:42
+#: admin.py:43
 #, python-brace-format
 msgid "\"{obj}\" has been validated."
 msgstr "\"{obj}\" wurde validiert."
 
-#: admin.py:49
+#: admin.py:50
 #, python-brace-format
 msgid "\"{obj}\" could not be validated because it seems to have an invalid type."
 msgstr "\"{obj}\" konnte nicht validiert werden, weil der Formulartyp ungültig ist."
 
-#: admin.py:78
+#: admin.py:79
 msgid "Advanced"
 msgstr "Fortgeschritten"
+
+#: admin.py:87
+msgid "Empty choice label"
+msgstr "Bezeichnung der leeren Auswahl"
 
 #: models.py:45 models.py:140
 msgid "name"
