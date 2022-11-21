@@ -9,6 +9,8 @@ Change log
 
 - Added multiple select and multiple checkboxes field types to the simple field
   base.
+- Changed the ``SELECT`` simple field type to use the placeholder field to
+  replace the default empty choices string if set.
 
 
 `0.2`_ (2022-11-11)

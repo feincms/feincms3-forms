@@ -395,7 +395,10 @@ class SimpleFieldBase(FormField):
         elif self.type == T.SELECT:
             choices = self.get_choices()
             if not self.is_required or not self.default_value:
-                choices = BLANK_CHOICE_DASH + choices
+                blank_choice = (
+                    [("", self.placeholder)] if self.placeholder else BLANK_CHOICE_DASH
+                )
+                choices = blank_choice + choices
             return super().get_fields(
                 form_class=forms.ChoiceField,
                 choices=choices,
