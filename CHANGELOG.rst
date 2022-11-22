@@ -11,6 +11,8 @@ Change log
   base.
 - Changed the ``SELECT`` simple field type to use the placeholder field to
   replace the default empty choices string if set.
+- Renamed ``SimpleFieldBase.get_fields`` to ``SimpleFieldBase.get_field`` to
+  enable better code reuse without ``super()``.
 
 
 `0.2`_ (2022-11-11)

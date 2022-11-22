@@ -1,4 +1,5 @@
 import re
+import warnings
 from functools import partial, reduce
 
 from content_editor.models import Type
@@ -221,11 +222,19 @@ class FormField(FormFieldBase):
     def __str__(self):
         return truncatechars(self.label, 50)
 
-    def get_fields(self, *, form_class, **kwargs):
+    def get_field(self, *, form_class, **kwargs):
         kwargs.setdefault("label", self.label)
         kwargs.setdefault("required", self.is_required)
         kwargs.setdefault("help_text", self.help_text)
         return {self.name: form_class(**kwargs)}
+
+    def get_fields(self, **kwargs):
+        warnings.warn(
+            "Replace super().get_fields() with self.get_field() now.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.get_field(**kwargs)
 
     def get_loaders(self):
         return [partial(simple_loader, label=self.label, name=self.name)]
@@ -336,7 +345,7 @@ class SimpleFieldBase(FormField):
         T = self.Type
 
         if self.type == T.TEXT:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.CharField,
                 max_length=self.max_length,
                 widget=forms.CharField.widget(
@@ -345,7 +354,7 @@ class SimpleFieldBase(FormField):
             )
 
         elif self.type == T.EMAIL:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.EmailField,
                 widget=forms.EmailField.widget(
                     attrs={"placeholder": self.placeholder or False}
@@ -353,7 +362,7 @@ class SimpleFieldBase(FormField):
             )
 
         elif self.type == T.URL:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.URLField,
                 widget=forms.URLField.widget(
                     attrs={"placeholder": self.placeholder or False}
@@ -361,7 +370,7 @@ class SimpleFieldBase(FormField):
             )
 
         elif self.type == T.DATE:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.DateField,
                 widget=forms.DateInput(
                     attrs={"placeholder": self.placeholder or False, "type": "date"}
@@ -369,7 +378,7 @@ class SimpleFieldBase(FormField):
             )
 
         elif self.type == T.INTEGER:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.IntegerField,
                 widget=forms.IntegerField.widget(
                     attrs={"placeholder": self.placeholder or False}
@@ -377,7 +386,7 @@ class SimpleFieldBase(FormField):
             )
 
         elif self.type == T.TEXTAREA:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.CharField,
                 max_length=self.max_length,
                 widget=forms.Textarea(
@@ -390,7 +399,7 @@ class SimpleFieldBase(FormField):
             )
 
         elif self.type == T.CHECKBOX:
-            return super().get_fields(form_class=forms.BooleanField)
+            return self.get_field(form_class=forms.BooleanField)
 
         elif self.type == T.SELECT:
             choices = self.get_choices()
@@ -399,26 +408,26 @@ class SimpleFieldBase(FormField):
                     [("", self.placeholder)] if self.placeholder else BLANK_CHOICE_DASH
                 )
                 choices = blank_choice + choices
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.ChoiceField,
                 choices=choices,
             )
 
         elif self.type == T.RADIO:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.ChoiceField,
                 widget=forms.RadioSelect,
                 choices=self.get_choices(),
             )
 
         elif self.type == T.SELECT_MULTIPLE:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.MultipleChoiceField,
                 choices=self.get_choices(),
             )
 
         elif self.type == T.CHECKBOX_SELECT_MULTIPLE:
-            return super().get_fields(
+            return self.get_field(
                 form_class=forms.MultipleChoiceField,
                 widget=forms.CheckboxSelectMultiple,
                 choices=self.get_choices(),
