@@ -5,7 +5,13 @@ Change log
 `Next version`_
 ~~~~~~~~~~~~~~~
 
-.. _Next version: https://github.com/matthiask/feincms3-forms/compare/0.2...main
+.. _Next version: https://github.com/matthiask/feincms3-forms/compare/0.3...main
+
+
+`0.3`_ (2022-11-22)
+~~~~~~~~~~~~~~~~~~~
+
+.. _0.3: https://github.com/matthiask/feincms3-forms/compare/0.2...0.3
 
 - Added multiple select and multiple checkboxes field types to the simple field
   base.
