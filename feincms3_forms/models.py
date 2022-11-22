@@ -424,5 +424,7 @@ class SimpleFieldBase(FormField):
                 choices=self.get_choices(),
             )
 
-        else:  # pragma: no cover
-            raise ImproperlyConfigured(f"Unknown type {self.model.TYPE}")
+        else:
+            raise ImproperlyConfigured(
+                f"Model {self!r} has unhandled type {self.type!r}"
+            )

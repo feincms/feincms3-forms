@@ -2,7 +2,7 @@ from content_editor.contents import contents_for_item
 from django import test
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test.utils import isolate_apps
 
 from feincms3_forms.models import FormFieldBase, FormType
@@ -25,6 +25,7 @@ from .models import (
     Radio,
     Select,
     SelectMultiple,
+    SimpleField,
     Text,
     Textarea,
 )
@@ -505,6 +506,15 @@ class FormsTest(test.TestCase):
             instance.get_fields()
         with self.assertRaises(NotImplementedError):
             instance.get_loaders()
+
+    @isolate_apps("testapp")
+    def test_unknown_simple_field_type(self):
+        cls = SimpleField.proxy("anything")
+        with self.assertRaisesRegex(
+            ImproperlyConfigured,
+            r"Model <SimpleField_anything: > has unhandled type ''",
+        ):
+            cls().get_fields()
 
     def test_all_simpleformfield_types(self):
         cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
