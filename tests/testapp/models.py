@@ -55,6 +55,7 @@ Select = SimpleField.proxy(SimpleField.Type.SELECT)
 Radio = SimpleField.proxy(SimpleField.Type.RADIO, verbose_name="Listen to the radio")
 SelectMultiple = SimpleField.proxy(SimpleField.Type.SELECT_MULTIPLE)
 CheckboxSelectMultiple = SimpleField.proxy(SimpleField.Type.CHECKBOX_SELECT_MULTIPLE)
+Anything = SimpleField.proxy("anything")
 
 
 def clean_duration(form, data, *, name):

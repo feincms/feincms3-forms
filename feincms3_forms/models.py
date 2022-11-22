@@ -30,9 +30,10 @@ class FormType(Type):
         value = super().__getattr__(attr)
         if isinstance(value, str) and re.match(r"^\w+\.([\w\.]+)+$", value):
             try:
-                return import_string(value)
+                value = import_string(value)
             except ModuleNotFoundError:
                 pass
+        setattr(self, attr, value)
         return value
 
 

@@ -60,6 +60,9 @@ class ConfiguredFormAdmin(ConfiguredFormAdmin):
             model=models.Radio,
             button='<i class="material-icons">radio_button_checked</i>',
         ),
+        SimpleFieldInline.create(models.SelectMultiple),
+        SimpleFieldInline.create(models.CheckboxSelectMultiple),
+        SimpleFieldInline.create(models.Anything),
         ContentEditorInline.create(model=models.Duration),
     ]
 

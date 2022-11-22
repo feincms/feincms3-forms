@@ -1,17 +1,18 @@
 from content_editor.contents import contents_for_item
-from django import test
+from django import forms, test
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test.utils import isolate_apps
 
-from feincms3_forms.models import FormFieldBase, FormType
+from feincms3_forms.models import FormField, FormFieldBase, FormType
 from feincms3_forms.renderer import create_form
 from feincms3_forms.reporting import get_loaders, simple_report, value_default
 from feincms3_forms.validation import Error, Warning
 
 from .models import (
     URL,
+    Anything,
     Checkbox,
     CheckboxSelectMultiple,
     ConfiguredForm,
@@ -25,7 +26,6 @@ from .models import (
     Radio,
     Select,
     SelectMultiple,
-    SimpleField,
     Text,
     Textarea,
 )
@@ -140,7 +140,7 @@ class FormsTest(test.TestCase):
             "testapp_simplefield_set-TOTAL_FORMS": 0,
             "testapp_simplefield_set-INITIAL_FORMS": 0,
         }
-        for i in range(0, 10):
+        for i in range(0, 20):
             data |= {
                 f"testapp_simplefield_set-{i}-TOTAL_FORMS": 0,
                 f"testapp_simplefield_set-{i}-INITIAL_FORMS": 0,
@@ -170,6 +170,9 @@ class FormsTest(test.TestCase):
     def test_simple_admin_validation(self):
         user = User.objects.create_superuser("admin", "admin@example.com", "password")
         self.client.force_login(user)
+
+        response = self.client.get("/admin/testapp/configuredform/add/")
+        self.assertNotContains(response, "has been validated.")
 
         cf = ConfiguredForm.objects.create(name="Test", form_type="other-fields")
         response = self.client.get(f"/admin/testapp/configuredform/{cf.id}/change/")
@@ -497,24 +500,46 @@ class FormsTest(test.TestCase):
 
     @isolate_apps("testapp")
     def test_form_field_base(self):
-        class FormField(FormFieldBase):
+        class Field(FormFieldBase):
             pass
 
-        instance = FormField()
+        instance = Field()
 
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaisesRegex(
+            NotImplementedError, r"testapp.field needs a get_fields implementation"
+        ):
             instance.get_fields()
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaisesRegex(
+            NotImplementedError, r"testapp.field needs a get_loaders implementation"
+        ):
             instance.get_loaders()
 
     @isolate_apps("testapp")
+    def test_form_field(self):
+        class Field(FormField):
+            pass
+
+        instance = Field(name="test")
+
+        # Replace get_fields with get_field when deprecation ends.
+        with self.assertWarnsRegex(DeprecationWarning, r"self.get_field()"):
+            fields = instance.get_fields(form_class=forms.CharField)
+
+        self.assertEqual(set(fields), {"test"})
+        self.assertIsInstance(fields["test"], forms.CharField)
+
+        loaders = instance.get_loaders()
+        self.assertEqual(len(loaders), 1)
+
+    @isolate_apps("testapp")
     def test_unknown_simple_field_type(self):
-        cls = SimpleField.proxy("anything")
         with self.assertRaisesRegex(
             ImproperlyConfigured,
             r"Model <SimpleField_anything: > has unhandled type ''",
         ):
-            cls().get_fields()
+            Anything().get_fields()
+
+        self.assertEqual(Anything.TYPE, "anything")
 
     def test_all_simpleformfield_types(self):
         cf = ConfiguredForm.objects.create(name="Test", form_type="contact")
@@ -571,4 +596,15 @@ class FormsTest(test.TestCase):
                     "The 'type' attribute of the field 'email' doesn't have the expected value 'email'."
                 )
             ],
+        )
+
+    def test_str(self):
+        self.assertEqual(
+            str(PlainText(text="1234567890" * 10)),
+            "1234567890" * 4,
+        )
+
+        self.assertEqual(
+            str(Duration(label_from="f", label_until="u")),
+            "f - u",
         )
