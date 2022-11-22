@@ -28,6 +28,7 @@ ALLOWED_HOSTS = ["*"]
 
 ROOT_URLCONF = "testapp.urls"
 LANGUAGES = (("en", "English"), ("de", "German"))
+USE_TZ = True
 
 TEMPLATES = [
     {
