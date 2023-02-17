@@ -7,6 +7,8 @@ Change log
 
 .. _Next version: https://github.com/matthiask/feincms3-forms/compare/0.3...main
 
+- Added Django 4.2a1.
+
 
 `0.3`_ (2022-11-22)
 ~~~~~~~~~~~~~~~~~~~
