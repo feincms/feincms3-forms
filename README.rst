@@ -26,23 +26,86 @@ contains a `guide showing how to integrate it
 <https://feincms3.readthedocs.io/en/latest/guides/apps-form-builder.html>`__.
 
 
-Design decisions
-================
+High level overview
+===================
 
-This is a list of things which should be explained but are not at the moment.
+The documentation is very sparse, sorry for that.
 
-- Form fields have to inherit ``FormFieldBase``. ``FormFieldBase`` only has a
-  ``name`` field. This field can be checked for clashes etc. The base class is
-  used instead of duck typing in various places where the code may encounter
-  not only form field plugins but also other django-content-editor plugins. The
-  latter are useful e.g. to add blocks of text or other content between form
-  fields.
-- The ``FormField`` offers a basic set of attributes for standard fields such
-  as a label, a help text and whether the field should be required or not.
-- The ``SimpleFieldBase`` should be instantiated in your project and can be
-  used to cheaply generate standard form field plugin proxies for HTML5 input
-  fields. (Sorry for the jargon.) Those proxies are standard Django model
-  proxies.
+
+Models
+~~~~~~
+
+
+FormFieldBase
+-------------
+
+Form fields have to inherit ``FormFieldBase``. ``FormFieldBase`` only has a
+``name`` field. This field can be checked for clashes etc. The base class is
+used instead of duck typing in various places where the code may encounter not
+only form field plugins but also other django-content-editor plugins. The
+latter are useful e.g. to add blocks of text or other content between form
+fields.
+
+The ``FormFieldBase`` model defines the basic API of form fields:
+
+- ``get_fields()``: Return a dictionary of form fields.
+- ``get_initial()``: Return initial values of said fields.
+- ``get_cleaners()``: Return a list of callables which receive the form
+  instance, return the cleaned data and may raise ``ValidationError``
+  exceptions.
+- ``get_loaders()``: Return a list of loaders. The purpose of loaders is to
+  load form submissions, e.g. for reporting purposes. Loaders are callables
+  which receive the serialized form data and return a dictionary of the
+  following shape: ``{"name": ..., "label": ..., "value": ...}``.
+
+
+FormField
+---------
+
+The ``FormField`` offers a basic set of attributes for standard fields such as
+a label, a help text and whether the field should be required or not. You do
+not have to use this model if you want to define your own. It's purpose is just
+to offer a few good defaults.
+
+
+SimpleFieldBase
+---------------
+
+The ``SimpleFieldBase`` should be instantiated in your project and can be used
+to cheaply add support for many basic field types such as text fields, email
+fields, checkboxes, choice fields and more with a single backing database table
+and model.
+
+The ``SimpleFieldBase`` has a corresponding ``SimpleFieldInline`` in the
+``feincms3_forms.admin`` module which shows and hides fields depending on the
+field type. For example, it makes no sense to define placeholders for
+checkboxes (browsers do not support them) therefore the field is omitted in the
+CMS.
+
+
+Renderer
+~~~~~~~~
+
+The renderer functions are responsible for creating and instantiating the form
+class. Form class creation and instantiation happens at once.
+
+
+Validation
+~~~~~~~~~~
+
+The validation module offers utilities to validate a form when it it defined in
+the CMS. For example, the backend code may require that an email field always
+exists and always has a certain predefined name (for example ``email`` 😏).
+These rules are not enforced at the moment but the user is always notified and
+can therefore choose to head them. Or bad things may happen depending on the
+code you write.
+
+
+Reporting
+~~~~~~~~~
+
+The reporting functions are mostly useful if you want to do something with
+submitted data.
 
 
 Installation and usage
