@@ -6,17 +6,24 @@ feincms3-forms
     :target: https://github.com/matthiask/feincms3-forms/
     :alt: CI Status
 
-This is an extremely flexible forms builder for the Django admin interface.
+This is an extremely flexible forms builder for the Django admin interface. It
+allows using `django-content-editor
+<https://django-content-editor.readthedocs.io/>`__ for your form which enables:
+
+- Build your own form in the CMS and not have to ask programmers to change
+  anything.
+- Reorder, add and remove pre-existing fields.
+- Add content (text, images, anything) between form fields.
+- Use regions to add additional structure to a form, e.g. to build configurable
+  multi-step forms (wizards).
+- Add your own form field plugins with all the flexibility and configurability
+  you desire.
 
 If you only want to integrate short and simple forms (e.g. a contact form)
 you're probably better off using `form_designer
 <https://github.com/feincms/form_designer>`__. The feincms3 documentation
 contains a `guide showing how to integrate it
 <https://feincms3.readthedocs.io/en/latest/guides/apps-form-builder.html>`__.
-
-If you need more flexibility, multi page forms, forms with other content
-between fields, a relatively straightforward way to define you own (compound)
-fields etc. etc. then feincms3-forms may be for you.
 
 
 Design decisions
