@@ -2,8 +2,7 @@ from content_editor.admin import ContentEditorInline
 from django.contrib import admin
 
 from feincms3_forms.admin import ConfiguredFormAdmin, SimpleFieldInline
-
-from . import models
+from testapp import models
 
 
 @admin.register(models.ConfiguredForm)

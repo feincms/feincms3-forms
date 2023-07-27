@@ -95,22 +95,22 @@ class SimpleFieldInline(FormFieldInline):
 
     @classmethod
     def create(cls, model, **kwargs):
-        T = model.Type
-        if model.TYPE in {T.TEXT, T.TEXTAREA}:
+        type = model.Type
+        if model.TYPE in {type.TEXT, type.TEXTAREA}:
             kwargs.setdefault(
                 "advanced_fields",
                 ["help_text", "placeholder", "default_value", "max_length"],
             )
 
-        elif model.TYPE in {T.EMAIL, T.URL, T.DATE, T.INTEGER}:
+        elif model.TYPE in {type.EMAIL, type.URL, type.DATE, type.INTEGER}:
             kwargs.setdefault(
                 "advanced_fields", ["help_text", "placeholder", "default_value"]
             )
 
-        elif model.TYPE in {T.CHECKBOX}:
+        elif model.TYPE in {type.CHECKBOX}:
             kwargs.setdefault("advanced_fields", ["help_text", "default_value"])
 
-        elif model.TYPE in {T.SELECT}:
+        elif model.TYPE in {type.SELECT}:
             kwargs.setdefault(
                 "core_fields", ["name", "label", "is_required", "choices"]
             )
@@ -119,9 +119,9 @@ class SimpleFieldInline(FormFieldInline):
             )
 
         elif model.TYPE in {
-            T.RADIO,
-            T.SELECT_MULTIPLE,
-            T.CHECKBOX_SELECT_MULTIPLE,
+            type.RADIO,
+            type.SELECT_MULTIPLE,
+            type.CHECKBOX_SELECT_MULTIPLE,
         }:
             kwargs.setdefault(
                 "core_fields", ["name", "label", "is_required", "choices"]
@@ -129,17 +129,17 @@ class SimpleFieldInline(FormFieldInline):
             kwargs.setdefault("advanced_fields", ["help_text", "default_value"])
 
         icons = {
-            T.TEXT: "short_text",
-            T.EMAIL: "alternate_email",
-            T.URL: "link",
-            T.DATE: "event",
-            T.INTEGER: "looks_one",
-            T.TEXTAREA: "notes",
-            T.CHECKBOX: "check_box",
-            T.SELECT: "arrow_drop_down_circle",
-            T.RADIO: "radio_button_checked",
-            T.SELECT_MULTIPLE: "check_box",
-            T.CHECKBOX_SELECT_MULTIPLE: "check_box",
+            type.TEXT: "short_text",
+            type.EMAIL: "alternate_email",
+            type.URL: "link",
+            type.DATE: "event",
+            type.INTEGER: "looks_one",
+            type.TEXTAREA: "notes",
+            type.CHECKBOX: "check_box",
+            type.SELECT: "arrow_drop_down_circle",
+            type.RADIO: "radio_button_checked",
+            type.SELECT_MULTIPLE: "check_box",
+            type.CHECKBOX_SELECT_MULTIPLE: "check_box",
         }
         if icon := icons.get(model.TYPE):
             kwargs.setdefault("button", f'<span class="material-icons">{icon}</span>')

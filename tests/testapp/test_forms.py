@@ -9,8 +9,7 @@ from feincms3_forms.models import FormField, FormFieldBase, FormType
 from feincms3_forms.renderer import create_form
 from feincms3_forms.reporting import get_loaders, simple_report, value_default
 from feincms3_forms.validation import Error, Warning
-
-from .models import (
+from testapp.models import (
     URL,
     Anything,
     Checkbox,
@@ -268,7 +267,7 @@ class FormsTest(test.TestCase):
         name = f"{prefix}-email"
         self.assertContains(
             response,
-            f'<input type="email" name="{name}" id="id_{name}" required>',
+            f'<input type="email" name="{name}" id="id_{name}" maxlength="320" required>',
             1,
             html=True,
         )

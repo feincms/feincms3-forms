@@ -1,9 +1,9 @@
 from content_editor.contents import contents_for_item
 from django.shortcuts import render
 from feincms3.renderer import RegionRenderer, template_renderer
-from testapp.models import ConfiguredForm, Duration, Honeypot, PlainText, SimpleField
 
 from feincms3_forms.renderer import create_form, short_prefix
+from testapp.models import ConfiguredForm, Duration, Honeypot, PlainText, SimpleField
 
 
 def simple_field_context(plugin, context):

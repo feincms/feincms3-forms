@@ -1,3 +1,4 @@
+import contextlib
 import re
 import warnings
 from functools import partial, reduce
@@ -29,10 +30,9 @@ class FormType(Type):
     def __getattr__(self, attr):
         value = super().__getattr__(attr)
         if isinstance(value, str) and re.match(r"^\w+\.([\w\.]+)+$", value):
-            try:
+            with contextlib.suppress(ModuleNotFoundError):
                 value = import_string(value)
-            except ModuleNotFoundError:
-                pass
+
         setattr(self, attr, value)
         return value
 
@@ -313,17 +313,19 @@ class SimpleFieldBase(FormField):
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)
 
-        if self.choices and self.default_value:
-            if slugify(self.default_value) not in dict(self.get_choices()):
-                raise validation_error(
-                    _(
-                        'The specified default value "%(default)s" isn\'t part of'
-                        " the available choices."
-                    )
-                    % {"default": self.default_value},
-                    field="default_value",
-                    exclude=exclude,
+        if (
+            self.choices
+            and self.default_value
+            and slugify(self.default_value) not in dict(self.get_choices())
+        ):
+            raise validation_error(
+                _(
+                    'The specified default value "%(default)s" isn\'t part of the available choices.'
                 )
+                % {"default": self.default_value},
+                field="default_value",
+                exclude=exclude,
+            )
 
     def get_choices(self):
         def _choice(value):
@@ -343,9 +345,9 @@ class SimpleFieldBase(FormField):
         return {self.name: self.default_value}
 
     def get_fields(self, **kwargs):
-        T = self.Type
+        type = self.Type
 
-        if self.type == T.TEXT:
+        if self.type == type.TEXT:
             return self.get_field(
                 form_class=forms.CharField,
                 max_length=self.max_length,
@@ -354,7 +356,7 @@ class SimpleFieldBase(FormField):
                 ),
             )
 
-        elif self.type == T.EMAIL:
+        elif self.type == type.EMAIL:
             return self.get_field(
                 form_class=forms.EmailField,
                 widget=forms.EmailField.widget(
@@ -362,7 +364,7 @@ class SimpleFieldBase(FormField):
                 ),
             )
 
-        elif self.type == T.URL:
+        elif self.type == type.URL:
             return self.get_field(
                 form_class=forms.URLField,
                 widget=forms.URLField.widget(
@@ -370,7 +372,7 @@ class SimpleFieldBase(FormField):
                 ),
             )
 
-        elif self.type == T.DATE:
+        elif self.type == type.DATE:
             return self.get_field(
                 form_class=forms.DateField,
                 widget=forms.DateInput(
@@ -378,7 +380,7 @@ class SimpleFieldBase(FormField):
                 ),
             )
 
-        elif self.type == T.INTEGER:
+        elif self.type == type.INTEGER:
             return self.get_field(
                 form_class=forms.IntegerField,
                 widget=forms.IntegerField.widget(
@@ -386,7 +388,7 @@ class SimpleFieldBase(FormField):
                 ),
             )
 
-        elif self.type == T.TEXTAREA:
+        elif self.type == type.TEXTAREA:
             return self.get_field(
                 form_class=forms.CharField,
                 max_length=self.max_length,
@@ -399,10 +401,10 @@ class SimpleFieldBase(FormField):
                 ),
             )
 
-        elif self.type == T.CHECKBOX:
+        elif self.type == type.CHECKBOX:
             return self.get_field(form_class=forms.BooleanField)
 
-        elif self.type == T.SELECT:
+        elif self.type == type.SELECT:
             choices = self.get_choices()
             if not self.is_required or not self.default_value:
                 blank_choice = (
@@ -414,20 +416,20 @@ class SimpleFieldBase(FormField):
                 choices=choices,
             )
 
-        elif self.type == T.RADIO:
+        elif self.type == type.RADIO:
             return self.get_field(
                 form_class=forms.ChoiceField,
                 widget=forms.RadioSelect,
                 choices=self.get_choices(),
             )
 
-        elif self.type == T.SELECT_MULTIPLE:
+        elif self.type == type.SELECT_MULTIPLE:
             return self.get_field(
                 form_class=forms.MultipleChoiceField,
                 choices=self.get_choices(),
             )
 
-        elif self.type == T.CHECKBOX_SELECT_MULTIPLE:
+        elif self.type == type.CHECKBOX_SELECT_MULTIPLE:
             return self.get_field(
                 form_class=forms.MultipleChoiceField,
                 widget=forms.CheckboxSelectMultiple,

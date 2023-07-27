@@ -116,3 +116,6 @@ class Honeypot(forms_models.FormFieldBase, ConfiguredFormPlugin):
 class Log(models.Model):
     configured_form = models.ForeignKey(ConfiguredForm, on_delete=models.CASCADE)
     data = models.JSONField(encoder=DjangoJSONEncoder)
+
+    def __str__(self):
+        return ""

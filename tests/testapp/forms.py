@@ -1,13 +1,13 @@
 from django import forms
 from django.http import HttpResponseRedirect
-from testapp.models import Log
-from testapp.views import renderer
 
 from feincms3_forms.validation import (
     validate_fields,
     validate_required_fields,
     validate_uniqueness,
 )
+from testapp.models import Log
+from testapp.views import renderer
 
 
 def validate_contact_form(configured_form):
