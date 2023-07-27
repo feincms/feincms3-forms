@@ -2,10 +2,8 @@
 Change log
 ==========
 
-`Next version`_
-~~~~~~~~~~~~~~~
-
-.. _Next version: https://github.com/matthiask/feincms3-forms/compare/0.3...main
+Next version
+~~~~~~~~~~~~
 
 - Increased the test coverage.
 - Defined default content editor button icons for simple fields.
