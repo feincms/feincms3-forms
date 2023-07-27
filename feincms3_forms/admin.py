@@ -128,4 +128,20 @@ class SimpleFieldInline(FormFieldInline):
             )
             kwargs.setdefault("advanced_fields", ["help_text", "default_value"])
 
+        icons = {
+            T.TEXT: "short_text",
+            T.EMAIL: "alternate_email",
+            T.URL: "link",
+            T.DATE: "event",
+            T.INTEGER: "looks_one",
+            T.TEXTAREA: "notes",
+            T.CHECKBOX: "check_box",
+            T.SELECT: "arrow_drop_down_circle",
+            T.RADIO: "radio_button_checked",
+            T.SELECT_MULTIPLE: "check_box",
+            T.CHECKBOX_SELECT_MULTIPLE: "check_box",
+        }
+        if icon := icons.get(model.TYPE):
+            kwargs.setdefault("button", f'<span class="material-icons">{icon}</span>')
+
         return super().create(model, **kwargs)
