@@ -8,7 +8,8 @@ Next version
 - Increased the test coverage.
 - Defined default content editor button icons for simple fields.
 - Switched to hatchling and ruff.
-- Added testing using Django 4.2 and Python 3.11.
+- Added testing using Django 4.2, 5.0, 5.1 and Python 3.11, 3.12.
+- Removed testing for Django older than 4.2.
 
 
 `0.3`_ (2022-11-22)
