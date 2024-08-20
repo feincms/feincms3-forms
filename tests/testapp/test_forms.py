@@ -139,7 +139,7 @@ class FormsTest(test.TestCase):
             "testapp_simplefield_set-TOTAL_FORMS": 0,
             "testapp_simplefield_set-INITIAL_FORMS": 0,
         }
-        for i in range(0, 20):
+        for i in range(20):
             data |= {
                 f"testapp_simplefield_set-{i}-TOTAL_FORMS": 0,
                 f"testapp_simplefield_set-{i}-INITIAL_FORMS": 0,
