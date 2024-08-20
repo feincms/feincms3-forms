@@ -5,12 +5,20 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+0.5 (2024-08-20)
+~~~~~~~~~~~~~~~~
+
+- Removed testing for Django older than 4.2.
+- Allowed setting a maximal length for URL and email fields.
+
+
+0.4 (2023-07-27)
+~~~~~~~~~~~~~~~~
+
 - Increased the test coverage.
 - Defined default content editor button icons for simple fields.
 - Switched to hatchling and ruff.
 - Added testing using Django 4.2, 5.0, 5.1 and Python 3.11, 3.12.
-- Removed testing for Django older than 4.2.
-- Allowed setting a maximal length for URL and email fields.
 
 
 `0.3`_ (2022-11-22)
