@@ -96,13 +96,13 @@ class SimpleFieldInline(FormFieldInline):
     @classmethod
     def create(cls, model, **kwargs):
         type = model.Type
-        if model.TYPE in {type.TEXT, type.TEXTAREA}:
+        if model.TYPE in {type.TEXT, type.TEXTAREA, type.EMAIL, type.URL}:
             kwargs.setdefault(
                 "advanced_fields",
                 ["help_text", "placeholder", "default_value", "max_length"],
             )
 
-        elif model.TYPE in {type.EMAIL, type.URL, type.DATE, type.INTEGER}:
+        elif model.TYPE in {type.DATE, type.INTEGER}:
             kwargs.setdefault(
                 "advanced_fields", ["help_text", "placeholder", "default_value"]
             )
