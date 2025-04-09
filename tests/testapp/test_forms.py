@@ -227,7 +227,7 @@ class FormsTest(test.TestCase):
 
         self.assertEqual(
             cm.exception.error_dict["default_value"][0].message,
-            'The specified default value "c" isn\'t part of' " the available choices.",
+            'The specified default value "c" isn\'t part of the available choices.',
         )
 
         kw["type"] = "radio"

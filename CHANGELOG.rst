@@ -5,6 +5,10 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+- Restored the lower Django bound to 3.2.
+- Added Django 5.2, Python 3.13.
+
+
 0.5 (2024-08-20)
 ~~~~~~~~~~~~~~~~
 
