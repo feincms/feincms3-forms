@@ -22,6 +22,9 @@ class Message:
             and self.message == other.message
         )
 
+    def __hash__(self):
+        return hash((self.level, self.message))
+
 
 class Warning(Message):
     def __init__(self, *args, **kwargs):
