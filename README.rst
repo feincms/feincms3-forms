@@ -93,12 +93,65 @@ class. Form class creation and instantiation happens at once.
 Validation
 ~~~~~~~~~~
 
-The validation module offers utilities to validate a form when it it defined in
+The validation module offers utilities to validate a form when it is defined in
 the CMS. For example, the backend code may require that an email field always
 exists and always has a certain predefined name (for example ``email`` 😏).
 These rules are not enforced at the moment but the user is always notified and
-can therefore choose to head them. Or bad things may happen depending on the
+can therefore choose to heed them. Or bad things may happen depending on the
 code you write.
+
+The ``feincms3_forms.validation`` module provides the following validators:
+
+- ``validate_uniqueness(fields)``: Checks for duplicate field names and returns
+  warnings if any fields appear more than once.
+- ``validate_required_fields(fields, required)``: Ensures that all specified
+  required field names are present in the form, returning errors for any missing
+  required fields.
+- ``validate_fields(fields, schema)``: Validates that fields match a given schema,
+  checking attributes like ``type`` and ``is_required``. Returns warnings for
+  missing expected fields and errors for fields that don't match the expected
+  attributes.
+
+These validators can be used in your form type's ``validate`` function. For
+example:
+
+.. code-block:: python
+
+    from feincms3_forms.validation import (
+        validate_fields,
+        validate_required_fields,
+        validate_uniqueness,
+    )
+
+    def validate_contact_form(configured_form):
+        fields = configured_form.get_formfields_union(
+            plugins=renderer.plugins(), attributes=["type", "is_required"]
+        )
+        return [
+            *validate_uniqueness(fields),
+            *validate_required_fields(fields, {"email"}),
+            *validate_fields(
+                fields,
+                {
+                    "email": {"type": "email", "is_required": True},
+                },
+            ),
+        ]
+
+Then reference this validation function in your ``ConfiguredForm`` model:
+
+.. code-block:: python
+
+    class ConfiguredForm(forms_models.ConfiguredForm):
+        FORMS = [
+            forms_models.FormType(
+                key="contact",
+                label="contact form",
+                regions=[Region(key="form", title="form")],
+                validate="app.forms.forms.validate_contact_form",
+                process="app.forms.forms.process_contact_form",
+            ),
+        ]
 
 
 Reporting
