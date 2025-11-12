@@ -29,8 +29,6 @@ contains a `guide showing how to integrate it
 High level overview
 ===================
 
-The documentation is very sparse, sorry for that.
-
 
 Models
 ~~~~~~
@@ -154,11 +152,186 @@ Then reference this validation function in your ``ConfiguredForm`` model:
         ]
 
 
+Loaders
+~~~~~~~
+
+Loaders are responsible for extracting and formatting submitted form data for
+display and export purposes. They convert the serialized form data (typically
+stored as JSON) back into a human-readable format.
+
+Each form field plugin that inherits from ``FormFieldBase`` should implement a
+``get_loaders()`` method that returns a list of loader callables. Each loader
+receives the serialized form data dictionary and returns a dictionary with the
+following structure:
+
+.. code-block:: python
+
+    {
+        "name": "field_name",      # The field name/key in the data
+        "label": "Field Label",    # Human-readable label
+        "value": "field value",    # The actual value
+    }
+
+Example loader implementation for a simple field:
+
+.. code-block:: python
+
+    from functools import partial
+    from feincms3_forms.models import simple_loader
+
+    class MyField(FormFieldBase, ConfiguredFormPlugin):
+        label = models.CharField(max_length=200)
+
+        def get_loaders(self):
+            return [
+                partial(simple_loader, label=self.label, name=self.name)
+            ]
+
+For compound fields that generate multiple form fields, return multiple loaders:
+
+.. code-block:: python
+
+    class Duration(FormFieldBase, ConfiguredFormPlugin):
+        label_from = models.CharField(max_length=1000)
+        label_until = models.CharField(max_length=1000)
+
+        def get_loaders(self):
+            return [
+                partial(
+                    simple_loader,
+                    label=self.label_from,
+                    name=f"{self.name}_from",
+                ),
+                partial(
+                    simple_loader,
+                    label=self.label_until,
+                    name=f"{self.name}_until",
+                ),
+            ]
+
+Custom loaders can perform additional processing on the data:
+
+.. code-block:: python
+
+    class Upload(FormField, ConfiguredFormPlugin):
+        def get_loaders(self):
+            def loader(data):
+                row = {"label": self.label, "name": self.name}
+                if value := data.get(self.name):
+                    # Convert file path to full URL
+                    row["value"] = f"{settings.DOMAIN}{storage.url(value)}"
+                else:
+                    row["value"] = ""
+                return row
+
+            return [loader]
+
+
 Reporting
 ~~~~~~~~~
 
-The reporting functions are mostly useful if you want to do something with
-submitted data.
+The reporting module provides utilities for working with submitted form data.
+The main functions are:
+
+**get_loaders(plugins)**
+
+Collects all loaders from form field plugins. Takes a list of plugin instances
+and returns a flat list of all loader callables.
+
+.. code-block:: python
+
+    from content_editor.contents import contents_for_item
+    from feincms3_forms.reporting import get_loaders
+
+    contents = contents_for_item(configured_form, plugins=renderer.plugins())
+    loaders = get_loaders(contents)
+
+    # Apply loaders to extract data
+    for loader in loaders:
+        row = loader(submitted_data)
+        print(f"{row['label']}: {row['value']}")
+
+**simple_report(contents, data)**
+
+Generates an HTML representation of submitted form data for display in the
+Django admin interface. Returns a safe HTML string with formatted field labels
+and values.
+
+.. code-block:: python
+
+    from django.contrib.admin import display
+    from feincms3_forms.reporting import simple_report
+
+    @display(description="Submitted Data")
+    def pretty_data(self, obj):
+        return simple_report(
+            contents=contents_for_item(obj.configured_form, plugins=renderer.plugins()),
+            data=obj.data,
+        )
+
+**value_default(row, default="Ø")**
+
+Helper function that returns a default value if the field value is empty.
+
+.. code-block:: python
+
+    from feincms3_forms.reporting import value_default
+
+    values = [value_default(loader(data)) for loader in loaders]
+
+
+Exporting submitted data
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A common use case is exporting submitted form data to Excel files. Here's a
+complete example showing how to create an admin action for exporting data:
+
+.. code-block:: python
+
+    from itertools import zip_longest
+    from content_editor.contents import contents_for_items
+    from django.utils import timezone
+    from feincms3_forms.reporting import get_loaders
+    from xlsxdocument import XLSXDocument
+
+    def export_submissions(modeladmin, request, queryset):
+        submissions = list(queryset.select_related("configured_form"))
+        configured_forms = {sub.configured_form for sub in submissions}
+
+        # Get loaders for all configured forms
+        cf_contents = contents_for_items(configured_forms, plugins=renderer.plugins())
+        loaders = {cf: get_loaders(contents) for cf, contents in cf_contents.items()}
+
+        cf_values = {}
+        for submission in submissions:
+            line = [
+                {"label": "ID", "name": "", "value": submission.id},
+                {"label": "Email", "name": "", "value": submission.email},
+                {"label": "Created", "name": "", "value": submission.created_at},
+            ] + [loader(submission.data) for loader in loaders[submission.configured_form]]
+
+            if submission.configured_form not in cf_values:
+                cf_values[submission.configured_form] = [
+                    [cell["label"] for cell in line],  # Header row
+                    [cell["name"] for cell in line],    # Field names row
+                ]
+            cf_values[submission.configured_form].append([cell["value"] for cell in line])
+
+        # Create Excel file
+        xlsx = XLSXDocument()
+        for configured_form, values in cf_values.items():
+            xlsx.add_sheet(str(configured_form)[:30])
+            xlsx.table(None, list(zip_longest(*values)))
+
+        return xlsx.to_response("submissions.xlsx")
+
+Add this action to your ModelAdmin:
+
+.. code-block:: python
+
+    @admin.register(Submission)
+    class SubmissionAdmin(admin.ModelAdmin):
+        actions = [export_submissions]
 
 
 Installation and usage
@@ -355,6 +528,887 @@ Finally, the form would have to be added to the admin site (``app.forms.admin``)
         ]
 
 And last but not least, create and apply migrations. That should be basically
-it. We haven't touched validating the configured form, reporting utilities or
-creating your own (compound) field types yet, for now you have to check the
-testsuite.
+it.
+
+
+Advanced usage and recipes
+===========================
+
+This section contains practical recipes and patterns for common use cases.
+
+
+Creating compound field types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Compound fields generate multiple form fields from a single plugin. Here's an
+example of a Duration field that creates "from" and "until" date fields:
+
+.. code-block:: python
+
+    from functools import partial
+    from django import forms
+    from django.db import models
+    from feincms3_forms.models import FormFieldBase, simple_loader
+
+    class Duration(FormFieldBase, ConfiguredFormPlugin):
+        label_from = models.CharField("from label", max_length=1000)
+        label_until = models.CharField("until label", max_length=1000)
+
+        class Meta:
+            verbose_name = "duration"
+
+        def __str__(self):
+            return f"{self.label_from} - {self.label_until}"
+
+        def get_fields(self, **kwargs):
+            return {
+                f"{self.name}_from": forms.DateField(
+                    label=self.label_from,
+                    required=True,
+                    widget=forms.DateInput(attrs={"type": "date"}),
+                ),
+                f"{self.name}_until": forms.DateField(
+                    label=self.label_until,
+                    required=True,
+                    widget=forms.DateInput(attrs={"type": "date"}),
+                ),
+            }
+
+        def get_loaders(self):
+            return [
+                partial(simple_loader, label=self.label_from, name=f"{self.name}_from"),
+                partial(simple_loader, label=self.label_until, name=f"{self.name}_until"),
+            ]
+
+
+Creating file upload fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+File upload fields require special handling for display and storage:
+
+.. code-block:: python
+
+    from django import forms
+    from django.db import models
+    from django.conf import settings
+    from feincms3_forms.models import FormField
+
+    class UploadFileInput(forms.FileInput):
+        template_name = "forms/upload_file_input.html"
+
+        def format_value(self, value):
+            return value
+
+        def get_context(self, name, value, attrs):
+            if value:
+                attrs["required"] = False
+            context = super().get_context(name, None, attrs)
+            if value and not isinstance(value, File):
+                context["current_value"] = os.path.basename(value)
+            return context
+
+    class Upload(FormField, ConfiguredFormPlugin):
+        class Meta:
+            verbose_name = "upload field"
+
+        def get_fields(self, **kwargs):
+            return super().get_fields(
+                form_class=forms.FileField,
+                widget=UploadFileInput,
+                **kwargs
+            )
+
+        def get_loaders(self):
+            def loader(data):
+                row = {"label": self.label, "name": self.name}
+                if value := data.get(self.name):
+                    row["value"] = f"{settings.DOMAIN}{uploads_storage.url(value)}"
+                else:
+                    row["value"] = ""
+                return row
+
+            return [loader]
+
+The corresponding template (``forms/upload_file_input.html``):
+
+.. code-block:: html+django
+
+    {% load i18n %}
+    <input type="file" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+    {% if widget.current_value %}
+        <p>{% trans "Current file:" %} {{ widget.current_value }}</p>
+    {% endif %}
+
+
+Custom form validation with phone numbers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create custom form field classes for specialized validation:
+
+.. code-block:: python
+
+    import phonenumbers
+    from django import forms
+    from feincms3_forms.models import FormField
+
+    class PhoneNumberFormField(forms.CharField):
+        def clean(self, value):
+            value = super().clean(value)
+            if not value:
+                return value
+
+            try:
+                number = phonenumbers.parse(value, "CH")
+            except phonenumbers.NumberParseException as exc:
+                raise forms.ValidationError(str(exc))
+            else:
+                if phonenumbers.is_valid_number(number):
+                    return phonenumbers.format_number(
+                        number, phonenumbers.PhoneNumberFormat.E164
+                    )
+                raise forms.ValidationError("Phone number invalid.")
+
+    class PhoneNumber(FormField, ConfiguredFormPlugin):
+        class Meta:
+            verbose_name = "phone number field"
+
+        def get_fields(self, **kwargs):
+            return super().get_fields(form_class=PhoneNumberFormField, **kwargs)
+
+
+Grouping form fields with collapsible sections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create collapsible groups for better form organization:
+
+.. code-block:: python
+
+    class Group(ConfiguredFormPlugin):
+        subregion = "group"
+
+        title = models.CharField(
+            "title",
+            max_length=200,
+            blank=True,
+            help_text="Use an empty title to finish an existing group without starting a new one.",
+        )
+
+        class Meta:
+            verbose_name = "group"
+
+        def __str__(self):
+            return self.title
+
+Register it in the renderer:
+
+.. code-block:: python
+
+    renderer.register(models.Group, "")
+
+Handle groups in your view using a custom Regions class:
+
+.. code-block:: python
+
+    from feincms3.regions import Regions, matches
+    from feincms3.renderer import render_in_context
+
+    class FormRegions(Regions):
+        def handle_group(self, items, context):
+            group = items.popleft()
+            if not group.title:
+                # Terminate group without creating output
+                return []
+
+            content = []
+            while items and not matches(items[0], subregions={"group"}):
+                content.append(
+                    self.renderer.render_plugin_in_context(items.popleft(), context)
+                )
+            return render_in_context(
+                context,
+                "forms/group.html",
+                {"group": group, "content": content}
+            )
+
+    # In your view:
+    context["form_regions"] = FormRegions.from_contents(contents, renderer=renderer)
+
+
+Storing submitted data with file handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Save file uploads properly when storing form submissions:
+
+.. code-block:: python
+
+    from django.core.files import File
+    from app.storage import uploads_storage
+
+    def save_files(instance, form):
+        """Extract files from form data and save them to storage."""
+        data = form.cleaned_data.copy()
+        for key, value in data.items():
+            if isinstance(value, File):
+                data[key] = uploads_storage.save(
+                    f"{instance._meta.label_lower}/{instance.pk}/{value.name}",
+                    value,
+                )
+        return data
+
+    def process_form(request, form, *, configured_form):
+        instance = MyModel.objects.create(
+            email=form.cleaned_data["email"],
+            configured_form=configured_form,
+        )
+        instance.data = save_files(instance, form)
+        instance.save()
+
+
+Sending email notifications with submission data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Send formatted emails to managers when forms are submitted:
+
+.. code-block:: python
+
+    from content_editor.contents import contents_for_item
+    from feincms3_forms.reporting import get_loaders, value_default
+    from authlib.email import render_to_mail
+
+    def send_notifications_to_managers(data, *, configured_form, url=""):
+        recipients = configured_form.send_notifications_to or [
+            row[1] for row in settings.MANAGERS
+        ]
+
+        contents = contents_for_item(configured_form, plugins=renderer.plugins())
+        loaders = get_loaders(contents)
+        values = [value_default(loader(data)) for loader in loaders]
+
+        mail = render_to_mail(
+            "forms/notification_mail",
+            {
+                "configured_form": configured_form,
+                "values": values,
+                "url": url
+            },
+            to=recipients,
+        )
+        mail.send()
+
+Email template (``forms/notification_mail.txt``):
+
+.. code-block:: text
+
+    A new {{ configured_form.name }} has been submitted.
+
+    {% for value in values %}
+    {{ value.label }}: {{ value.value }}
+    {% endfor %}
+
+    {% if url %}View in admin: {{ url }}{% endif %}
+
+
+Continue later functionality for multi-step forms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Allow users to save progress and continue filling out forms later:
+
+.. code-block:: python
+
+    from django.core import signing
+
+    # In your ConfiguredForm model:
+    class ConfiguredForm(forms_models.ConfiguredForm):
+        FORMS = [
+            forms_models.FormType(
+                key="grant-proposal",
+                label="grant proposal",
+                regions=[Region(key="form", title="form")],
+                form_class="app.forms.forms.GrantProposalForm",
+                process="app.forms.forms.process_grant_proposal_form",
+                allow_continue_later=True,  # Enable continue later
+            ),
+        ]
+
+    # In your Proposal model:
+    def get_proposal_url(self):
+        return reverse_app(
+            "forms-grant-proposal",
+            "code",
+            kwargs={"code": signing.dumps(self.pk)},
+        )
+
+    # In your view:
+    def form(request, code=None):
+        context = page_context(request)
+        cf = context["page"].form
+
+        form_kwargs = {"request": request, "prefix": short_prefix(cf, "form")}
+
+        if code is not None:
+            with contextlib.suppress(Exception):
+                form_kwargs["instance"] = Proposal.objects.get(pk=signing.loads(code))
+
+        # ... rest of view code
+
+    # In your form processing:
+    def process_grant_proposal_form(request, form, *, configured_form):
+        form.instance.proposal = form.instance.proposal | save_files(form.instance, form)
+        form.instance.save()
+
+        if "_continue" in request.POST:
+            messages.success(
+                request,
+                "The proposal has been saved. You may continue editing it later.",
+            )
+            return HttpResponseRedirect(form.instance.get_proposal_url())
+
+        messages.success(request, "The proposal has been sent.")
+        # Send notifications...
+
+Template button for "Continue later":
+
+.. code-block:: html+django
+
+    <button type="submit" name="_submit">{% trans "Submit" %}</button>
+    {% if configured_form.type.allow_continue_later %}
+        <button type="submit" name="_continue">{% trans "Save and continue later" %}</button>
+    {% endif %}
+
+
+Displaying submission data in Django admin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Show formatted submission data in the admin interface:
+
+.. code-block:: python
+
+    from django.contrib import admin
+    from django.contrib.admin import display
+    from content_editor.contents import contents_for_item
+    from feincms3_forms.reporting import simple_report
+
+    @admin.register(Proposal)
+    class ProposalAdmin(admin.ModelAdmin):
+        def get_fields(self, request, obj=None):
+            fields = super().get_fields(request, obj)
+            # Exclude raw JSON fields from the form
+            return [field for field in fields if field not in {"outline", "proposal"}]
+
+        def get_readonly_fields(self, request, obj=None):
+            return [field.name for field in self.model._meta.fields] + [
+                "pretty_outline",
+                "pretty_proposal",
+            ]
+
+        @display(description="outline")
+        def pretty_outline(self, obj):
+            return simple_report(
+                contents=contents_for_item(
+                    obj.outline_form,
+                    plugins=renderer.plugins()
+                ),
+                data=obj.outline,
+            )
+
+        @display(description="proposal")
+        def pretty_proposal(self, obj):
+            return simple_report(
+                contents=contents_for_item(
+                    obj.proposal_form,
+                    plugins=renderer.plugins()
+                ),
+                data=obj.proposal,
+            )
+
+
+Dynamic regions with database-driven structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create form regions dynamically based on database content. This is useful for
+building questionnaires where the structure is entirely configurable via the
+admin:
+
+.. code-block:: python
+
+    from content_editor.models import Region
+    from admin_ordering.models import OrderableModel
+
+    class ConfiguredForm(forms_models.ConfiguredForm):
+        FORMS = [
+            forms_models.FormType(
+                key="questionnaire",
+                label="questionnaire",
+                # Regions are dynamically generated from database
+                regions=lambda cf: [
+                    Region(key="cover", title="Cover"),
+                ] + [group.region for group in cf.groups.all()],
+                form_class="app.tools.forms.Form",
+                process="app.forms.forms.process_questionnaire_form",
+            ),
+        ]
+
+    class Group(OrderableModel):
+        parent = models.ForeignKey(
+            ConfiguredForm,
+            on_delete=models.CASCADE,
+            related_name="groups",
+        )
+        title = models.CharField(max_length=200)
+
+        @property
+        def region(self):
+            return Region(
+                key=f"group_{self.pk}",
+                title=self.title,
+            )
+
+In the admin, add an inline for managing groups:
+
+.. code-block:: python
+
+    from admin_ordering.admin import OrderableAdmin
+
+    class GroupInline(OrderableAdmin, admin.TabularInline):
+        model = models.Group
+        extra = 0
+
+    @admin.register(models.ConfiguredForm)
+    class ConfiguredFormAdmin(ConfiguredFormAdmin):
+        inlines = [GroupInline, ...other inlines...]
+
+
+Rendering forms with different regions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Render only specific regions of a form, useful for multi-page forms:
+
+.. code-block:: python
+
+    def start(request):
+        cf = get_configured_form()
+
+        # Only render the first region (cover page)
+        contents = contents_for_item(
+            cf,
+            plugins=renderer.plugins(),
+            regions=cf.regions[:1],  # Only first region
+        )
+        form = create_form(contents, form_class=cf.type.form_class, form_kwargs={...})
+
+        if form.is_valid():
+            # Save and redirect to main questionnaire
+            return HttpResponseRedirect(...)
+
+    def questionnaire(request):
+        cf = get_configured_form()
+
+        # Render remaining regions (skip cover)
+        contents = contents_for_item(
+            cf,
+            plugins=renderer.plugins(),
+            regions=cf.regions[1:],  # Skip first region
+        )
+        form = create_form(contents, form_class=cf.type.form_class, form_kwargs={...})
+
+
+Custom subregions and nested plugin handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Subregions allow you to group related plugins together and handle them as a unit.
+This is useful for creating nested structures like accordions, tabs, or hierarchical
+form groups.
+
+Example: Create a custom renderer that groups form fields under collapsible headings:
+
+.. code-block:: python
+
+    from feincms3.renderer import RegionRenderer, render_in_context
+
+    class CustomFormRenderer(RegionRenderer):
+        def handle_groupitems(self, plugins, context):
+            """Collect all items in a groupitems subregion."""
+            items = [
+                self.render_plugin(plugin, context)
+                for plugin in self.takewhile_subregion(plugins, "groupitems")
+            ]
+            if items:
+                yield render_in_context(
+                    context,
+                    "forms/group-items.html",
+                    {"items": items}
+                )
+
+        def handle_groupheaders(self, plugins, context):
+            """Handle group headers and their nested items."""
+            header = plugins.popleft()
+            items = self.handle_groupitems(plugins, context)
+
+            if items:
+                yield render_in_context(
+                    context,
+                    "forms/group.html",
+                    {"header": header, "items": items}
+                )
+
+    renderer = CustomFormRenderer()
+    renderer.register(
+        models.GroupHeader,
+        lambda p, c: {"plugin": p},
+        subregion="groupheaders"
+    )
+    renderer.register(
+        models.SimpleField,
+        template_renderer("forms/simple-field.html", simple_field_context),
+        subregion="groupitems"
+    )
+
+This pattern allows you to create forms where plugins are automatically grouped
+under headers, with custom rendering for each level of nesting. The key methods
+are ``takewhile_subregion()`` which collects plugins until it encounters a
+different subregion, and ``handle_<subregion>()`` methods which are automatically
+called by the renderer
+
+
+Multiple renderers for different views
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use different renderers for form input vs. viewing submitted data:
+
+.. code-block:: python
+
+    # Form renderer for data entry
+    form_renderer = RegionRenderer()
+    form_renderer.register(
+        models.SimpleField,
+        template_renderer("forms/simple-field.html", simple_field_context),
+    )
+
+    # Report renderer for viewing submitted data
+    def report_simple_field_context(plugin, context):
+        return {
+            "plugin": plugin,
+            "rows": [
+                loader(context["submission"].data)
+                for loader in plugin.get_loaders()
+            ],
+        }
+
+    report_renderer = RegionRenderer()
+    report_renderer.register(
+        models.SimpleField,
+        template_renderer("forms/report-simple-field.html", report_simple_field_context),
+    )
+
+    # In views:
+    def questionnaire(request):
+        contents = contents_for_item(cf, plugins=form_renderer.plugins())
+        form = create_form(contents, ...)
+
+    def report(request, submission):
+        contents = contents_for_item(cf, plugins=report_renderer.plugins())
+        context["report_regions"] = report_renderer.regions_from_contents(contents)
+
+
+Signed URLs for secure submission access
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use Django's signing framework to create secure, tamper-proof URLs for accessing
+submissions without authentication:
+
+.. code-block:: python
+
+    from django.core.signing import Signer
+
+    _signer = Signer(salt="submissions")
+
+    class SubmissionQuerySet(models.QuerySet):
+        def get_by_code(self, code):
+            return self.get(pk=_signer.unsign(code))
+
+    class Submission(models.Model):
+        # ... fields ...
+        objects = SubmissionQuerySet.as_manager()
+
+        def get_report_url(self):
+            return reverse_app(
+                "forms",
+                "report",
+                kwargs={"code": _signer.sign(self.pk)}
+            )
+
+    # View decorator for handling signed submissions
+    def signed_submission(func):
+        @wraps(func)
+        def view(request, **kwargs):
+            if "code" not in kwargs:
+                return func(request, **kwargs)
+            try:
+                submission = Submission.objects.get_by_code(kwargs.pop("code"))
+            except Submission.DoesNotExist:
+                messages.error(request, "The submission does not exist.")
+            except Exception:
+                messages.error(request, "The link is invalid.")
+            else:
+                return func(request, submission=submission, **kwargs)
+            return HttpResponseRedirect("../../../")
+        return view
+
+    # Use in views
+    @signed_submission
+    def report(request, submission):
+        # submission is automatically loaded from the signed code
+        ...
+
+
+Admin actions with object-level actions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add custom actions to individual objects in the admin using django-object-actions:
+
+.. code-block:: python
+
+    from django_object_actions import DjangoObjectActions
+
+    @admin.register(models.Submission)
+    class SubmissionAdmin(DjangoObjectActions, admin.ModelAdmin):
+        change_actions = ["view_report"]
+
+        @admin.display(description="View report")
+        def view_report(self, request, obj):
+            return HttpResponseRedirect(obj.get_report_url())
+
+This adds a "View report" button at the top of the change form for each submission.
+
+
+Incremental form data merging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Merge form data incrementally across multiple form submissions (useful for
+multi-page forms):
+
+.. code-block:: python
+
+    def process_step_one(request, form, *, configured_form):
+        submission = Submission.objects.create(
+            title=form.cleaned_data["title"],
+            email=form.cleaned_data["email"],
+            configured_form=configured_form,
+            data={},
+        )
+        # Save initial data
+        submission.data = save_files(submission, form)
+        submission.save()
+        return HttpResponseRedirect(submission.get_next_step_url())
+
+    def process_step_two(request, form, *, submission):
+        # Merge new data with existing data using | operator
+        submission.data = submission.data | save_files(submission, form)
+        submission.save()
+        return HttpResponseRedirect(submission.get_report_url())
+
+The merge operator (``|``) ensures that data from previous steps is preserved
+while new fields are added or updated.
+
+
+Custom validation with HTML5 pattern attribute
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add client-side validation patterns to form fields:
+
+.. code-block:: python
+
+    class PhoneNumberFormField(forms.CharField):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            # Add HTML5 pattern for client-side validation
+            self.widget.attrs.setdefault(
+                "pattern",
+                r"^[\+\(\)\s]*[0-9][\+\(\)0-9\s]*$"
+            )
+
+        def clean(self, value):
+            value = super().clean(value)
+            if not value:
+                return value
+
+            try:
+                number = phonenumbers.parse(value, "CH")
+            except phonenumbers.NumberParseException as exc:
+                raise forms.ValidationError(
+                    _("Unable to parse as phone number.")
+                ) from exc
+            else:
+                if phonenumbers.is_valid_number(number):
+                    return phonenumbers.format_number(
+                        number, phonenumbers.PhoneNumberFormat.E164
+                    )
+                raise forms.ValidationError(_("Phone number invalid."))
+
+This provides immediate feedback to users before server-side validation.
+
+
+Conditional inlines based on form type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Show different inlines in the admin depending on the selected form type:
+
+.. code-block:: python
+
+    from admin_ordering.admin import OrderableAdmin
+
+    class StepInline(OrderableAdmin, admin.TabularInline):
+        model = models.Step
+        extra = 0
+
+    @admin.register(models.ConfiguredForm)
+    class ConfiguredFormAdmin(ConfiguredFormAdmin):
+        def get_inlines(self, request, obj):
+            if not obj:
+                return []
+
+            # Base inlines for all form types
+            inlines = [
+                ContentEditorInline.create(models.RichText),
+                SimpleFieldInline.create(models.Text),
+                SimpleFieldInline.create(models.Email),
+                # ... more inlines
+            ]
+
+            # Add type-specific inlines
+            if obj.type.key == "consulting":
+                return [StepInline, *inlines]
+
+            return inlines
+
+This allows different form types to have different configuration options.
+
+
+Advanced process function with validation control
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create process functions that receive the validation state and control behavior
+based on whether the form is partially or fully submitted:
+
+.. code-block:: python
+
+    def process_form(
+        request,
+        form,
+        is_valid,
+        *,
+        configured_form,
+        submission,
+        viewname="form",
+        is_last=False,
+    ):
+        # Ensure we have a submission for intermediate steps
+        if not is_last and not submission:
+            return HttpResponseBadRequest()
+
+        if not submission:
+            submission = Submission.objects.create(
+                configured_form=configured_form,
+                data={},
+                email=form.cleaned_data.get("email", ""),
+            )
+
+        # Always save data, even if validation failed (for auto-save)
+        submission.data = submission.data | save_files(submission, form)
+        submission.email = submission.data.get("email") or submission.email
+        submission.save()
+
+        # Send notification only on final valid submission
+        if is_last and is_valid and (email := submission.data.get("email")):
+            mail = render_to_mail(
+                "forms/notification_mail",
+                {"submission": submission},
+                to=[email],
+                bcc=["admin@example.com"],
+            )
+            mail.send(fail_silently=True)
+
+        namespaces = (request.resolver_match.namespaces[-1], "forms")
+        url = reverse_app(
+            namespaces,
+            viewname,
+            kwargs={"code": submission._code},
+        )
+        return HttpResponseRedirect(url)
+
+Call this from your view:
+
+.. code-block:: python
+
+    def form(request, submission):
+        # ... form setup ...
+
+        if request.method == "POST":
+            should_continue = request.POST.get("_continue")
+            is_valid = form.is_valid()
+
+            return cf.type.process(
+                request,
+                form,
+                is_valid,
+                configured_form=cf,
+                submission=submission,
+                viewname="form" if should_continue else "thanks",
+                is_last=not should_continue,
+            )
+
+
+Handling DELETE requests for submissions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Allow users to delete their submissions via AJAX:
+
+.. code-block:: python
+
+    from django.http import JsonResponse
+
+    @signed_submission
+    def form(request, submission):
+        # ... existing GET/POST handling ...
+
+        if request.method == "DELETE":
+            if submission:
+                submission.delete()
+            return JsonResponse({})
+
+        # ... render form ...
+
+Client-side JavaScript:
+
+.. code-block:: javascript
+
+    // Delete submission button
+    deleteButton.addEventListener('click', async () => {
+        await fetch(window.location.href, { method: 'DELETE' });
+        window.location.href = '/';
+    });
+
+
+Safe filename handling with PurePath
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use ``pathlib.PurePath`` for secure filename extraction from paths:
+
+.. code-block:: python
+
+    from pathlib import PurePath
+
+    class UploadFileInput(forms.FileInput):
+        template_name = "forms/upload_file_input.html"
+
+        def get_context(self, name, value, attrs):
+            if value:
+                attrs["required"] = False
+            context = super().get_context(name, None, attrs)
+            if value and not isinstance(value, File):
+                # Safely extract filename without directory traversal
+                context["current_value"] = PurePath(value).name
+            return context
+
+``PurePath`` handles paths safely regardless of the operating system and
+prevents directory traversal attacks.
