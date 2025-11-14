@@ -7,6 +7,9 @@ Next version
 
 - Restored the lower Django bound to 3.2.
 - Added Django 5.2, Python 3.13.
+- Added more docs and many many recipes.
+- Added a ``strip_name_prefix`` boolean argument to ``get_form_fields`` which
+  simplifies referencing individual form fields in templates.
 
 
 0.5 (2024-08-20)

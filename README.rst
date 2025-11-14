@@ -559,6 +559,7 @@ example of a Duration field that creates "from" and "until" date fields:
             return f"{self.label_from} - {self.label_until}"
 
         def get_fields(self, **kwargs):
+            # Always use the f"{self.name}_" prefix to make field names unique!
             return {
                 f"{self.name}_from": forms.DateField(
                     label=self.label_from,
@@ -573,10 +574,77 @@ example of a Duration field that creates "from" and "until" date fields:
             }
 
         def get_loaders(self):
+            # Always use the f"{self.name}_" prefix in loaders too!
             return [
                 partial(simple_loader, label=self.label_from, name=f"{self.name}_from"),
                 partial(simple_loader, label=self.label_until, name=f"{self.name}_until"),
             ]
+
+
+Custom templates for compound fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When rendering compound fields with custom templates, you may want to access
+fields by their simplified names instead of their full prefixed names. Use the
+``strip_name_prefix`` parameter in ``get_form_fields()`` to achieve this.
+
+**Important**: When creating compound fields, always prefix your field names with
+``f"{self.name}_"`` in ``get_fields()`` to ensure field names are unique across
+multiple instances of the same plugin. The ``strip_name_prefix`` parameter then
+allows you to access these fields in templates without the prefix.
+
+.. code-block:: python
+
+    class AddressBlock(FormFieldBase, ConfiguredFormPlugin):
+        def get_fields(self):
+            # Always use the f"{self.name}_" prefix to make field names unique!
+            return {
+                f"{self.name}_first_name": forms.CharField(label="First name"),
+                f"{self.name}_last_name": forms.CharField(label="Last name"),
+                f"{self.name}_street": forms.CharField(label="Street"),
+                f"{self.name}_postal_code": forms.CharField(label="Postal code"),
+                f"{self.name}_city": forms.CharField(label="City"),
+            }
+
+    # Register in renderer with strip_name_prefix
+    renderer.register(
+        models.AddressBlock,
+        lambda plugin, context: render_in_context(
+            context,
+            "forms/address-block.html",
+            {
+                "plugin": plugin,
+                "fields": context["form"].get_form_fields(plugin, strip_name_prefix=True),
+            },
+        ),
+    )
+
+This allows you to reference fields in templates using their simple names:
+
+.. code-block:: html+django
+
+    {% load i18n %}
+
+    <div class="address-block">
+      <h3>{% translate "Address Information" %}</h3>
+
+      <div class="address-block__fields">
+        {# First name and last name on one line #}
+        <div class="field field-50-50">
+          {{ fields.first_name }}
+          {{ fields.last_name }}
+        </div>
+
+        {# Postal code and city #}
+        <div class="field field-25-75">
+          {{ fields.postal_code }}
+          {{ fields.city }}
+        </div>
+      </div>
+    </div>
+
+Without ``strip_name_prefix=True``, you would need to use the full prefixed
+names like ``fields.address_first_name``, ``fields.address_last_name``, etc.
 
 
 Creating file upload fields
