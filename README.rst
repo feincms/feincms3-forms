@@ -288,7 +288,6 @@ complete example showing how to create an admin action for exporting data:
 
 .. code-block:: python
 
-    from itertools import zip_longest
     from content_editor.contents import contents_for_items
     from django.utils import timezone
     from feincms3_forms.reporting import get_loaders
@@ -313,7 +312,6 @@ complete example showing how to create an admin action for exporting data:
             if submission.configured_form not in cf_values:
                 cf_values[submission.configured_form] = [
                     [cell["label"] for cell in line],  # Header row
-                    [cell["name"] for cell in line],    # Field names row
                 ]
             cf_values[submission.configured_form].append([cell["value"] for cell in line])
 
@@ -321,7 +319,7 @@ complete example showing how to create an admin action for exporting data:
         xlsx = XLSXDocument()
         for configured_form, values in cf_values.items():
             xlsx.add_sheet(str(configured_form)[:30])
-            xlsx.table(None, list(zip_longest(*values)))
+            xlsx.table(None, values)
 
         return xlsx.to_response("submissions.xlsx")
 
