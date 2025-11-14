@@ -5,6 +5,10 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+
+0.6 (2025-11-14)
+~~~~~~~~~~~~~~~~
+
 - Restored the lower Django bound to 3.2.
 - Added Django 5.2, Python 3.13.
 - Added more docs and many many recipes.
