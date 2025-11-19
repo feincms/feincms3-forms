@@ -1478,3 +1478,334 @@ Use ``pathlib.PurePath`` for secure filename extraction from paths:
 
 ``PurePath`` handles paths safely regardless of the operating system and
 prevents directory traversal attacks.
+
+
+JSON Plugins with Proxy Mixins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For maximum flexibility with JSON-based field configuration, you can combine
+`django-json-schema-editor <https://github.com/matthiask/django-json-schema-editor>`_
+with the proxy pattern to create highly configurable form fields. This approach
+allows non-technical users to configure complex field structures entirely through
+the CMS while maintaining clean Python APIs for field rendering and validation.
+
+Basic pattern
+-------------
+
+First, create a base JSON plugin class that inherits from both ``JSONPluginBase``
+and ``FormFieldBase``:
+
+.. code-block:: python
+
+    from django_json_schema_editor.plugins import JSONPluginBase
+    from feincms3_forms.models import FormFieldBase
+
+    class JSONPlugin(JSONPluginBase, FormFieldBase, ConfiguredFormPlugin):
+        pass
+
+This base class combines JSON schema capabilities with form field functionality.
+
+Creating field-specific mixins
+-------------------------------
+
+Define mixins that implement the form field behavior for specific field types.
+Mixins should implement ``get_fields()`` and ``get_loaders()`` methods:
+
+.. code-block:: python
+
+    from functools import partial
+    from django import forms
+    from django.utils.html import mark_safe
+    from feincms3_forms.models import simple_loader
+
+    class SingleChoiceMixin:
+        """Mixin for a radio button choice field."""
+
+        def get_fields(self):
+            return {
+                self.name: forms.ChoiceField(
+                    widget=forms.RadioSelect,
+                    choices=[
+                        (choice["name"], mark_safe(choice["description"]))
+                        for choice in self.data["choices"]
+                    ],
+                    label=self.data["label"],
+                    required=self.data["is_required"],
+                    help_text=self.data.get("help_text", ""),
+                )
+            }
+
+        def get_loaders(self):
+            return [partial(simple_loader, name=self.name, label=self.data["label"])]
+
+Create proxy models with schemas
+---------------------------------
+
+Use the ``JSONPlugin.proxy()`` method to create proxy models with JSON schemas
+and mixins:
+
+.. code-block:: python
+
+    from django.utils.translation import gettext_lazy as _
+
+    SingleChoice = JSONPlugin.proxy(
+        "single_choice",
+        verbose_name=_("single choice"),
+        mixins=[SingleChoiceMixin],
+        schema={
+            "type": "object",
+            "properties": {
+                "label": {"type": "string", "title": _("label")},
+                "is_required": {
+                    "type": "boolean",
+                    "title": _("is required"),
+                    "format": "checkbox",
+                },
+                "help_text": {"type": "string", "title": _("help text")},
+                "choices": {
+                    "type": "array",
+                    "format": "table",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "title": _("Machine-readable value"),
+                                "minLength": 1,
+                            },
+                            "description": {
+                                "type": "string",
+                                "format": "prose",
+                                "title": _("Label shown to users"),
+                                "options": {
+                                    "extensions": {
+                                        "Bold": True,
+                                        "Link": True,
+                                    }
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    )
+
+This creates a fully functional form field plugin where:
+
+- The schema defines the JSON structure for configuring the field in the admin
+- The mixin implements how the field behaves in the actual form
+- The proxy model ties everything together with a single database table
+
+Compound fields with JSON plugins
+----------------------------------
+
+JSON plugins excel at creating compound fields that generate multiple form fields.
+Here's an example of a full address field:
+
+.. code-block:: python
+
+    class FullAddressMixin:
+        def get_fields(self):
+            return {
+                f"{self.name}_first_name": forms.CharField(
+                    label=_("First name"),
+                    max_length=100,
+                    required=True,
+                ),
+                f"{self.name}_last_name": forms.CharField(
+                    label=_("Last name"),
+                    max_length=100,
+                    required=True,
+                ),
+                f"{self.name}_date_of_birth": forms.DateField(
+                    label=_("Date of birth"),
+                    required=True,
+                    widget=forms.DateInput(attrs={"type": "date"}),
+                ),
+                f"{self.name}_email": forms.EmailField(
+                    label=_("Email"),
+                    required=True,
+                ),
+                f"{self.name}_street": forms.CharField(
+                    label=_("Street address"),
+                    max_length=200,
+                    required=True,
+                ),
+                f"{self.name}_postal_code": forms.CharField(
+                    label=_("Postal code"),
+                    max_length=20,
+                    required=True,
+                ),
+                f"{self.name}_city": forms.CharField(
+                    label=_("City"),
+                    max_length=100,
+                    required=True,
+                ),
+            }
+
+        def get_loaders(self):
+            return [
+                partial(simple_loader, name=f"{self.name}_first_name", label=_("First name")),
+                partial(simple_loader, name=f"{self.name}_last_name", label=_("Last name")),
+                partial(simple_loader, name=f"{self.name}_date_of_birth", label=_("Date of birth")),
+                partial(simple_loader, name=f"{self.name}_email", label=_("Email")),
+                partial(simple_loader, name=f"{self.name}_street", label=_("Street address")),
+                partial(simple_loader, name=f"{self.name}_postal_code", label=_("Postal code")),
+                partial(simple_loader, name=f"{self.name}_city", label=_("City")),
+            ]
+
+    FullAddress = JSONPlugin.proxy(
+        "full_address",
+        verbose_name=_("full address"),
+        mixins=[FullAddressMixin],
+        schema={"type": "object"},  # Minimal schema if no configuration needed
+    )
+
+This creates a reusable address block that can be added to any form with a single
+click in the admin interface.
+
+Admin integration
+-----------------
+
+Register JSON plugins in the admin using ``JSONPluginInline``:
+
+.. code-block:: python
+
+    from django_json_schema_editor.plugins import JSONPluginInline
+    from feincms3_forms.admin import ConfiguredFormAdmin
+
+    @admin.register(models.ConfiguredForm)
+    class FormAdmin(ConfiguredFormAdmin):
+        inlines = [
+            # ... SimpleFieldInline instances for simple fields ...
+
+            JSONPluginInline.create(
+                model=models.SingleChoice,
+                icon="radio_button_checked",
+            ),
+            JSONPluginInline.create(
+                model=models.FullAddress,
+                icon="home",
+            ),
+        ]
+
+Template rendering
+------------------
+
+JSON plugins can be rendered with custom templates just like other form fields.
+Use ``strip_name_prefix=True`` for compound fields to access fields by their
+simple names:
+
+.. code-block:: python
+
+    # In your renderer configuration
+    renderer.register(
+        models.JSONPlugin,
+        "",  # Empty string for base class (not directly rendered)
+    )
+
+    renderer.register(
+        [models.SingleChoice, models.FullAddress],
+        lambda plugin, context: render_in_context(
+            context,
+            [
+                f"forms/{plugin.type}-field.html",
+                "forms/simple-field.html",  # Fallback template
+            ],
+            {
+                "plugin": plugin,
+                "fields": context["form"].get_form_fields(plugin, strip_name_prefix=True),
+            },
+        ),
+        fetch=False,
+    )
+
+Example template (``forms/full_address-field.html``):
+
+.. code-block:: html+django
+
+    {% load i18n %}
+
+    <div class="full-address">
+      <h3>{% translate "Personal Information" %}</h3>
+
+      <div class="field field-50-50">
+        {{ fields.first_name }}
+        {{ fields.last_name }}
+      </div>
+
+      <div class="field">
+        {{ fields.date_of_birth }}
+      </div>
+
+      <h3>{% translate "Contact Information" %}</h3>
+
+      <div class="field">
+        {{ fields.email }}
+      </div>
+
+      <div class="field">
+        {{ fields.street }}
+      </div>
+
+      <div class="field field-25-75">
+        {{ fields.postal_code }}
+        {{ fields.city }}
+      </div>
+    </div>
+
+Benefits of JSON plugins with mixins
+-------------------------------------
+
+This pattern provides several advantages:
+
+**Flexibility**: Content editors can configure field behavior without code changes
+
+**Reusability**: Complex field groups can be packaged as single plugins
+
+**Maintainability**: Field logic (mixin) is separate from configuration (schema)
+
+**Type safety**: Each proxy model is a distinct type in the database and admin
+
+**Single table**: All JSON plugins share one database table (efficient)
+
+**Rich configuration**: JSON Schema provides validation, nested objects, arrays,
+and rich text editing
+
+**Admin integration**: Automatic admin interface generation from JSON schema
+
+Choosing between JSON plugins and regular models
+-------------------------------------------------
+
+Whether you use JSON plugins or regular Django models for your form fields is
+largely a matter of preference and project requirements. Both approaches work
+seamlessly with feincms3-forms and use the same rendering and validation
+infrastructure.
+
+**The key advantage of JSON plugins** is the ability to store nested, structured
+data without additional database tables. This is particularly valuable when you
+need **inline editing of complex structures** like arrays or nested objects.
+
+For example, the ``SingleChoice`` plugin allows users to configure an array of
+choices, each with a name and rich text description. Since Django's admin doesn't
+support inlines within inlines (you can't have an inline for choices within the
+form field inline), JSON plugins provide a practical solution. The JSON Schema
+editor renders the choices as an editable table directly in the form field
+configuration.
+
+The same applies to any field type where configuration requires nested data:
+
+- Choice fields with configurable options
+- Fields with multiple related text snippets (labels, help texts, descriptions)
+- Fields that reference arrays of values
+- Any configuration that would otherwise require a separate model and inline
+
+**Regular Django models** work well for simpler field types where configuration
+is straightforward (text fields, email fields, dates) or when you prefer working
+with traditional Django model fields and forms.
+
+In practice, you'll likely use both approaches in the same project. The
+``SimpleFieldBase`` proxy pattern works well for basic field types, while JSON
+plugins handle more complex, user-configurable fields. Both integrate seamlessly
+with django-content-editor and can be mixed freely in the same form.
