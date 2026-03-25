@@ -32,6 +32,9 @@ contains a `guide showing how to integrate it
 
    installation
    reference
-   recipes
+   custom-fields
+   form-structure
+   submissions
+   reporting
    development
    changelog
