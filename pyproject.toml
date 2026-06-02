@@ -43,8 +43,8 @@ optional-dependencies.tests = [
 urls.Homepage = "https://github.com/matthiask/feincms3-forms/"
 
 [tool.hatch]
-build.include = [ "feincms3_forms/" ]
 version.path = "feincms3_forms/__init__.py"
+build.include = [ "feincms3_forms/" ]
 
 [tool.ruff]
 target-version = "py38"
