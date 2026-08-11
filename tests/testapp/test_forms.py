@@ -345,7 +345,6 @@ class FormsTest(test.TestCase):
             regions="required",
             form_class="required",
             validate="required",
-            #
             int=42,
             module="django.test",
             nothing="no.thing",

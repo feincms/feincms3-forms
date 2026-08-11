@@ -68,7 +68,7 @@ class NameField(models.CharField):
         super().__init__(**kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super().deconstruct()
+        name, _path, args, kwargs = super().deconstruct()
         return name, "django.db.models.CharField", args, kwargs
 
     def formfield(self, **kwargs):

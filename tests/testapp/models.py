@@ -100,7 +100,7 @@ class HoneypotField(forms.CharField):
     def validate(self, value):
         super().validate(value)
         if value:
-            raise forms.ValidationError(f"Invalid honeypot value {repr(value)}")
+            raise forms.ValidationError(f"Invalid honeypot value {value!r}")
 
 
 class Honeypot(forms_models.FormFieldBase, ConfiguredFormPlugin):
