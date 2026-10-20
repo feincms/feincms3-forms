@@ -11,7 +11,7 @@ license = { text = "BSD-3-Clause" }
 authors = [
   { name = "Matthias Kestenholz", email = "mk@feinheit.ch" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 classifiers = [
   "Environment :: Web Environment",
   "Framework :: Django",
@@ -20,8 +20,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -35,7 +33,7 @@ dynamic = [
   "version",
 ]
 dependencies = [
-  "django>=3.2",
+  "django>=4.2",
   "feincms3>=0.90b17",
 ]
 optional-dependencies.tests = [
@@ -48,7 +46,7 @@ version.path = "feincms3_forms/__init__.py"
 build.include = [ "feincms3_forms/" ]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py311"
 fix = true
 show-fixes = true
 lint.extend-select = [

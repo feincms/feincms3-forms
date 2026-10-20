@@ -9,6 +9,8 @@ Next version
   into the module containing the base model so that ``manage.py shell`` can
   automatically import them. The model names should hopefully be unique
   enough.
+- Dropped Python < 3.11 and Django < 4.2.
+- Added Django 6.1, Python 3.14 and 3.15.
 
 
 0.6 (2025-11-14)
