@@ -1,5 +1,6 @@
 import contextlib
 import re
+import sys
 import warnings
 from functools import partial, reduce
 
@@ -300,8 +301,9 @@ class SimpleFieldBase(FormField):
 
         meta_class = type("Meta", (cls.Meta,), meta)
 
-        return type(
-            f"{cls.__qualname__}_{type_name}",
+        new_type_name = f"{cls.__qualname__}_{type_name}"
+        new_type = type(
+            new_type_name,
             (cls,),
             {
                 "__module__": cls.__module__,
@@ -309,6 +311,11 @@ class SimpleFieldBase(FormField):
                 "TYPE": type_name,
             },
         )
+        if (module := sys.modules.get(cls.__module__)) and not hasattr(
+            module, new_type_name
+        ):
+            setattr(module, new_type_name, new_type)
+        return new_type
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude)

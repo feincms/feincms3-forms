@@ -5,6 +5,11 @@ Change log
 Next version
 ~~~~~~~~~~~~
 
+- Changed ``SimpleFieldBase.proxy`` to automatically inject the created models
+  into the module containing the base model so that ``manage.py shell`` can
+  automatically import them. The model names should hopefully be unique
+  enough.
+
 
 0.6 (2025-11-14)
 ~~~~~~~~~~~~~~~~

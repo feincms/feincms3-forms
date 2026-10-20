@@ -9,6 +9,7 @@ from feincms3_forms.models import FormField, FormFieldBase, FormType
 from feincms3_forms.renderer import create_form
 from feincms3_forms.reporting import get_loaders, simple_report, value_default
 from feincms3_forms.validation import Error, Warning
+from testapp import models
 from testapp.models import (
     URL,
     Anything,
@@ -606,3 +607,19 @@ class FormsTest(test.TestCase):
             str(Duration(label_from="f", label_until="u")),
             "f - u",
         )
+
+    def test_proxy_is_injected_into_the_module(self):
+        """Proxies are added to the model's module so ``manage.py shell`` finds them."""
+        self.assertIs(models.SimpleField_text, Text)
+        self.assertIs(models.SimpleField_anything, Anything)
+
+    def test_proxy_does_not_overwrite_existing_module_attributes(self):
+        sentinel = object()
+        models.SimpleField_test_no_overwrite = sentinel
+        try:
+            with isolate_apps("testapp"):
+                proxy = models.SimpleField.proxy("test_no_overwrite")
+            self.assertIs(models.SimpleField_test_no_overwrite, sentinel)
+            self.assertIsNot(proxy, sentinel)
+        finally:
+            del models.SimpleField_test_no_overwrite
